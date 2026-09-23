@@ -1,3 +1,5 @@
-node_modules
-data/db.json
+node_modules/
 .env
+weartee-backend/data/db.json
+weartee-backend/data/outbox/
+.DS_Store

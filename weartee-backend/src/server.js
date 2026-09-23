@@ -14,7 +14,7 @@ const {
 } = require("./store");
 
 const PORT = Number(process.env.PORT) || 5050;
-const ADMIN_KEY = process.env.ADMIN_KEY || "change-me-admin";
+const ADMIN_KEY = process.env.ADMIN_KEY || "weartee";
 
 function publicUser(u) {
   return {
@@ -34,7 +34,8 @@ function send(res, status, data) {
     "Content-Type": "application/json; charset=utf-8",
     "Content-Length": Buffer.byteLength(body),
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, x-admin-key, x-cart-id",
+    "Access-Control-Allow-Headers":
+      "Content-Type, Authorization, x-admin-key, x-cart-id",
     "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
   });
   res.end(body);
@@ -91,14 +92,19 @@ function pricing(items, meta, stateName) {
 }
 
 function sanitizeItems(rawItems, products) {
-  if (!Array.isArray(rawItems) || !rawItems.length) return { error: "Cart is empty" };
+  if (!Array.isArray(rawItems) || !rawItems.length)
+    return { error: "Cart is empty" };
   const items = [];
   for (const line of rawItems) {
     const product = products.find((p) => p.id === line.id);
     if (!product) return { error: `Unknown product: ${line.id}` };
     const qty = Math.max(1, Math.min(99, Number(line.qty) || 1));
-    const size = product.sizes.includes(line.size) ? line.size : product.sizes[0];
-    const color = product.colors.includes(line.color) ? line.color : product.colors[0];
+    const size = product.sizes.includes(line.size)
+      ? line.size
+      : product.sizes[0];
+    const color = product.colors.includes(line.color)
+      ? line.color
+      : product.colors[0];
     items.push({
       id: product.id,
       name: product.name,
@@ -112,7 +118,6 @@ function sanitizeItems(rawItems, products) {
   }
   return { items };
 }
-
 
 function resolveCartKey(req, url) {
   const user = authUser(req);
@@ -131,9 +136,15 @@ function normalizeCartItems(rawItems, products) {
     const product = products.find((p) => p.id === line.id);
     if (!product) continue;
     const qty = Math.max(1, Math.min(99, Number(line.qty) || 1));
-    const size = product.sizes.includes(line.size) ? line.size : product.sizes[0];
-    const color = product.colors.includes(line.color) ? line.color : product.colors[0];
-    const existing = items.find((i) => i.id === product.id && i.size === size && i.color === color);
+    const size = product.sizes.includes(line.size)
+      ? line.size
+      : product.sizes[0];
+    const color = product.colors.includes(line.color)
+      ? line.color
+      : product.colors[0];
+    const existing = items.find(
+      (i) => i.id === product.id && i.size === size && i.color === color,
+    );
     if (existing) {
       existing.qty = Math.min(99, existing.qty + qty);
     } else {
@@ -156,7 +167,8 @@ async function handle(req, res) {
   if (req.method === "OPTIONS") {
     res.writeHead(204, {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization, x-admin-key, x-cart-id",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, x-admin-key, x-cart-id",
       "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
     });
     return res.end();
@@ -168,10 +180,13 @@ async function handle(req, res) {
 
   try {
     if (method === "GET" && path === "/api/health") {
-      return send(res, 200, { ok: true, service: "weartee", time: new Date().toISOString() });
+      return send(res, 200, {
+        ok: true,
+        service: "weartee",
+        time: new Date().toISOString(),
+      });
     }
 
-    
     if (method === "GET" && path === "/api/shipping") {
       const db = readDb();
       const stateName = url.searchParams.get("state") || "";
@@ -202,11 +217,14 @@ async function handle(req, res) {
       const db = readDb();
       let list = db.products.slice();
       const categories = url.searchParams.getAll("category").filter(Boolean);
-      if (categories.length) list = list.filter((p) => categories.includes(p.category));
+      if (categories.length)
+        list = list.filter((p) => categories.includes(p.category));
       const search = url.searchParams.get("search");
       if (search) {
         const q = search.toLowerCase();
-        list = list.filter((p) => p.name.toLowerCase().includes(q) || p.category.includes(q));
+        list = list.filter(
+          (p) => p.name.toLowerCase().includes(q) || p.category.includes(q),
+        );
       }
       return send(res, 200, { products: list });
     }
@@ -221,16 +239,22 @@ async function handle(req, res) {
 
     if (method === "POST" && path === "/api/auth/register") {
       const body = await readBody(req);
-      const cleanEmail = String(body.email || "").trim().toLowerCase();
+      const cleanEmail = String(body.email || "")
+        .trim()
+        .toLowerCase();
       if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
         return send(res, 400, { error: "Valid email required" });
       }
       if (!body.password || String(body.password).length < 6) {
-        return send(res, 400, { error: "Password must be at least 6 characters" });
+        return send(res, 400, {
+          error: "Password must be at least 6 characters",
+        });
       }
       const db = readDb();
       if (db.users.some((u) => u.email === cleanEmail)) {
-        return send(res, 409, { error: "An account with that email already exists" });
+        return send(res, 409, {
+          error: "An account with that email already exists",
+        });
       }
       const user = {
         id: crypto.randomUUID(),
@@ -245,19 +269,27 @@ async function handle(req, res) {
       };
       db.users.push(user);
       writeDb(db);
-      return send(res, 201, { token: signToken({ uid: user.id }), user: publicUser(user) });
+      return send(res, 201, {
+        token: signToken({ uid: user.id }),
+        user: publicUser(user),
+      });
     }
 
     if (method === "POST" && path === "/api/auth/login") {
       const body = await readBody(req);
-      const cleanEmail = String(body.email || "").trim().toLowerCase();
+      const cleanEmail = String(body.email || "")
+        .trim()
+        .toLowerCase();
       const password = String(body.password || "");
       const db = readDb();
       const user = db.users.find((u) => u.email === cleanEmail);
       if (!user || !verifyPassword(password, user.passwordHash)) {
         return send(res, 401, { error: "Invalid email or password" });
       }
-      return send(res, 200, { token: signToken({ uid: user.id }), user: publicUser(user) });
+      return send(res, 200, {
+        token: signToken({ uid: user.id }),
+        user: publicUser(user),
+      });
     }
 
     if (method === "GET" && path === "/api/me") {
@@ -295,13 +327,16 @@ async function handle(req, res) {
       const user = authUser(req);
       const shipping = body.shipping || {};
       const name = String(shipping.name || user?.name || "").trim();
-      const email = String(shipping.email || user?.email || "").trim().toLowerCase();
+      const email = String(shipping.email || user?.email || "")
+        .trim()
+        .toLowerCase();
       const phone = String(shipping.phone || user?.phone || "").trim();
       const address = String(shipping.address || "").trim();
       const city = String(shipping.city || "").trim();
       const state = String(shipping.state || "").trim();
 
-      if (name.length < 2) return send(res, 400, { error: "Full name required" });
+      if (name.length < 2)
+        return send(res, 400, { error: "Full name required" });
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return send(res, 400, { error: "Valid email required" });
       }
@@ -310,7 +345,9 @@ async function handle(req, res) {
         return send(res, 400, { error: "Complete shipping address required" });
       }
 
-      const payment = ["Card", "Bank Transfer", "Pay on Delivery"].includes(body.payment)
+      const payment = ["Card", "Bank Transfer", "Pay on Delivery"].includes(
+        body.payment,
+      )
         ? body.payment
         : "Pay on Delivery";
 
@@ -359,7 +396,8 @@ async function handle(req, res) {
       const email = String(url.searchParams.get("email") || user?.email || "")
         .trim()
         .toLowerCase();
-      if (!user && !email) return send(res, 400, { error: "Email or sign-in required" });
+      if (!user && !email)
+        return send(res, 400, { error: "Email or sign-in required" });
       const list = db.orders.filter(
         (o) => (user && o.userId === user.id) || o.shipping.email === email,
       );
@@ -396,7 +434,11 @@ async function handle(req, res) {
       return send(res, 200, { order });
     }
 
-    if (method === "PATCH" && path.startsWith("/api/admin/orders/") && !path.endsWith("/notify")) {
+    if (
+      method === "PATCH" &&
+      path.startsWith("/api/admin/orders/") &&
+      !path.endsWith("/notify")
+    ) {
       if (req.headers["x-admin-key"] !== ADMIN_KEY) {
         return send(res, 401, { error: "Admin key required" });
       }
@@ -464,10 +506,17 @@ async function handle(req, res) {
         });
       }
 
-      return send(res, 200, { order, email: emailResult, statusChanged: prevStatus !== order.status });
+      return send(res, 200, {
+        order,
+        email: emailResult,
+        statusChanged: prevStatus !== order.status,
+      });
     }
 
-    if (method === "POST" && path.match(/^\/api\/admin\/orders\/[^/]+\/notify$/)) {
+    if (
+      method === "POST" &&
+      path.match(/^\/api\/admin\/orders\/[^/]+\/notify$/)
+    ) {
       if (req.headers["x-admin-key"] !== ADMIN_KEY) {
         return send(res, 401, { error: "Admin key required" });
       }
@@ -505,20 +554,28 @@ async function handle(req, res) {
       const db = readDb();
       const product = db.products.find((p) => p.id === id);
       if (!product) return send(res, 404, { error: "Product not found" });
-      if (body.price !== undefined) product.price = Math.max(0, Number(body.price) || 0);
-      if (body.name !== undefined) product.name = String(body.name).trim() || product.name;
-      if (body.category !== undefined) product.category = String(body.category).trim() || product.category;
+      if (body.price !== undefined)
+        product.price = Math.max(0, Number(body.price) || 0);
+      if (body.name !== undefined)
+        product.name = String(body.name).trim() || product.name;
+      if (body.category !== undefined)
+        product.category = String(body.category).trim() || product.category;
       writeDb(db);
       return send(res, 200, { product });
     }
 
-
     if (method === "GET" && path === "/api/cart") {
       const key = resolveCartKey(req, url);
-      if (!key) return send(res, 400, { error: "Missing cart id (send x-cart-id header) or sign in" });
+      if (!key)
+        return send(res, 400, {
+          error: "Missing cart id (send x-cart-id header) or sign in",
+        });
       const db = readDb();
       const items = (db.carts[key] && db.carts[key].items) || [];
-      return send(res, 200, { cartId: key.startsWith("guest:") ? key.slice(6) : null, items });
+      return send(res, 200, {
+        cartId: key.startsWith("guest:") ? key.slice(6) : null,
+        items,
+      });
     }
 
     if (method === "PUT" && path === "/api/cart") {
@@ -532,7 +589,10 @@ async function handle(req, res) {
       const db = readDb();
       const packed = normalizeCartItems(body.items || [], db.products);
       if (packed.error) return send(res, 400, { error: packed.error });
-      db.carts[key] = { items: packed.items, updatedAt: new Date().toISOString() };
+      db.carts[key] = {
+        items: packed.items,
+        updatedAt: new Date().toISOString(),
+      };
       writeDb(db);
       return send(res, 200, {
         cartId: key.startsWith("guest:") ? key.slice(6) : null,
@@ -546,9 +606,11 @@ async function handle(req, res) {
       const db = readDb();
       db.carts[key] = { items: [], updatedAt: new Date().toISOString() };
       writeDb(db);
-      return send(res, 200, { cartId: key.startsWith("guest:") ? key.slice(6) : null, items: [] });
+      return send(res, 200, {
+        cartId: key.startsWith("guest:") ? key.slice(6) : null,
+        items: [],
+      });
     }
-
 
     // Serve frontend (shop + admin) from weartee-fixed when present
     if (method === "GET" && !path.startsWith("/api")) {
