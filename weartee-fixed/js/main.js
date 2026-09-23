@@ -59,10 +59,8 @@ const Cart = {
   subtotal() {
     return Cart.all().reduce((n, i) => n + i.price * i.qty, 0);
   },
-  shipping() {
-    const sub = Cart.subtotal();
-    if (sub === 0 || sub >= FREE_SHIPPING_THRESHOLD) return 0;
-    return SHIPPING_FEE;
+  shipping(stateName) {
+    return shippingFeeForState(stateName, Cart.subtotal());
   },
   total() {
     return Cart.subtotal() + Cart.shipping();
@@ -114,13 +112,11 @@ const Cart = {
   lineSubtotal(items) {
     return items.reduce((n, i) => n + i.price * i.qty, 0);
   },
-  lineShipping(items) {
-    const sub = Cart.lineSubtotal(items);
-    if (sub === 0 || sub >= FREE_SHIPPING_THRESHOLD) return 0;
-    return SHIPPING_FEE;
+  lineShipping(items, stateName) {
+    return shippingFeeForState(stateName, Cart.lineSubtotal(items));
   },
-  lineTotal(items) {
-    return Cart.lineSubtotal(items) + Cart.lineShipping(items);
+  lineTotal(items, stateName) {
+    return Cart.lineSubtotal(items) + Cart.lineShipping(items, stateName);
   },
   pendingCheckout() {
     try {

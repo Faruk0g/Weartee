@@ -25,6 +25,8 @@ function readDb() {
       colorSwatches: seed.colorSwatches,
       shippingFee: seed.shippingFee,
       freeShippingThreshold: seed.freeShippingThreshold,
+      shippingByState: seed.shippingByState || {},
+      defaultShippingFee: seed.shippingFee || 4000,
     };
     writeDb(db);
     return db;
@@ -34,6 +36,15 @@ function readDb() {
   if (!Array.isArray(db.users)) db.users = [];
   if (!Array.isArray(db.orders)) db.orders = [];
   if (!Array.isArray(db.products)) db.products = [];
+  if (!db.meta) db.meta = {};
+  if (!db.meta.shippingByState) {
+    try {
+      const seed = loadSeed();
+      db.meta.shippingByState = seed.shippingByState || {};
+      db.meta.defaultShippingFee = seed.shippingFee || db.meta.shippingFee || 4000;
+      db.meta.freeShippingThreshold = db.meta.freeShippingThreshold || seed.freeShippingThreshold || 50000;
+    } catch (_) {}
+  }
   return db;
 }
 

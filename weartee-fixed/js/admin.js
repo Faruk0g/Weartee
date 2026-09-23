@@ -1,7 +1,11 @@
 const STATUS_FLOW = ["Confirmed", "Shipped", "Out for Delivery", "Delivered"];
 
 const state = {
-  apiBase: localStorage.getItem("wt_admin_api") || "http://localhost:5050",
+  apiBase: localStorage.getItem("wt_admin_api") || (
+    location.protocol.startsWith("http")
+      ? (location.port === "5050" ? location.origin : "http://localhost:5050")
+      : "http://localhost:5050"
+  ),
   key: sessionStorage.getItem("wt_admin_key") || "",
   orders: [],
   products: [],

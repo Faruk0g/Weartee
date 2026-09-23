@@ -298,8 +298,31 @@ const COLOR_SWATCHES = {
   multi: "linear-gradient(135deg,#E5A4B3 0%,#7A5443 100%)",
 };
 
-const SHIPPING_FEE = 3500;
+const SHIPPING_FEE = 3500; // fallback when state unknown
 const FREE_SHIPPING_THRESHOLD = 50000;
+
+/** Delivery fee by Nigerian state (₦). Admin/backend can override via /api/meta */
+const SHIPPING_BY_STATE = {
+  Lagos: 2500,
+  Ogun: 3000, Oyo: 3500, Osun: 3500, Ondo: 3500, Ekiti: 3500,
+  Edo: 4000, Delta: 4000, Rivers: 4000, Bayelsa: 4500,
+  Anambra: 4000, Enugu: 4000, Abia: 4000, Imo: 4000, Ebonyi: 4000,
+  "Cross River": 4500, "Akwa Ibom": 4500,
+  "Abuja FCT": 4000, Kwara: 4000, Kogi: 4000, Benue: 4500,
+  Nasarawa: 4500, Plateau: 4500, Niger: 4500, Taraba: 5000,
+  Kaduna: 5000, Kano: 5000, Katsina: 5500, Jigawa: 5500,
+  Bauchi: 5000, Gombe: 5000, Yobe: 5500, Borno: 5500,
+  Sokoto: 5500, Kebbi: 5500, Zamfara: 5500, Adamawa: 5000,
+};
+
+function shippingFeeForState(stateName, subtotal) {
+  const sub = Number(subtotal) || 0;
+  if (sub <= 0) return 0;
+  if (sub >= FREE_SHIPPING_THRESHOLD) return 0;
+  const key = String(stateName || "").trim();
+  if (key && SHIPPING_BY_STATE[key] != null) return SHIPPING_BY_STATE[key];
+  return SHIPPING_FEE;
+}
 
 function formatPrice(n) {
   return "\u20A6" + Number(n).toLocaleString("en-NG");

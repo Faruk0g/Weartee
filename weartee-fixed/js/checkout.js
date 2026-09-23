@@ -62,13 +62,22 @@ function itemsHTML(items) {
     .join("");
 }
 
+function selectedState() {
+  const el = document.getElementById("state");
+  return el ? el.value : "";
+}
+
 function renderSummary() {
   const items = Cart.linesForCheckout();
   document.getElementById("sideItems").innerHTML = itemsHTML(items);
   const subtotal = Cart.lineSubtotal(items);
-  const shipping = Cart.lineShipping(items);
+  const stateName = selectedState();
+  const shipping = Cart.lineShipping(items, stateName);
   document.getElementById("sumSubtotal").textContent = formatPrice(subtotal);
-  document.getElementById("sumShipping").textContent = shipping === 0 ? "Free" : formatPrice(shipping);
+  let shipLabel = shipping === 0 ? "Free" : formatPrice(shipping);
+  if (shipping > 0 && stateName) shipLabel += ` (${stateName})`;
+  if (shipping > 0 && !stateName) shipLabel = "Select state";
+  document.getElementById("sumShipping").textContent = shipLabel;
   document.getElementById("sumTotal").textContent = formatPrice(subtotal + shipping);
 
   if (currentStep === 3) {
@@ -131,8 +140,8 @@ async function placeOrder() {
       shipping: payload.shipping,
       payment: payload.payment,
       subtotal: Cart.lineSubtotal(items),
-      shippingFee: Cart.lineShipping(items),
-      total: Cart.lineTotal(items),
+      shippingFee: Cart.lineShipping(items, payload.shipping.state),
+      total: Cart.lineTotal(items, payload.shipping.state),
     };
   }
 
@@ -216,6 +225,11 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     placeOrder();
   });
+
+  const stateEl = document.getElementById("state");
+  if (stateEl) {
+    stateEl.addEventListener("change", renderSummary);
+  }
 
   goToStep(1);
   renderSummary();

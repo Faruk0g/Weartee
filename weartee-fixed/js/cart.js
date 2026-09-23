@@ -53,10 +53,12 @@ function renderCart() {
     count === 0 ? "Nothing here yet." : `${count} item${count === 1 ? "" : "s"} in your cart`;
 
   const subtotal = Cart.subtotal();
-  const shipping = Cart.shipping();
+  const shipping = Cart.shipping(); // no state on cart page — base / free only
   document.getElementById("sumSubtotal").textContent = formatPrice(subtotal);
-  document.getElementById("sumShipping").textContent = shipping === 0 ? "Free" : formatPrice(shipping);
-  document.getElementById("sumTotal").textContent = formatPrice(subtotal + shipping);
+  document.getElementById("sumShipping").textContent =
+    subtotal === 0 ? "—" : shipping === 0 ? "Free" : "From " + formatPrice(2500);
+  document.getElementById("sumTotal").textContent =
+    subtotal === 0 ? formatPrice(0) : formatPrice(subtotal) + "+";
 
   const bar = document.getElementById("freeShipBar");
   if (subtotal === 0) {

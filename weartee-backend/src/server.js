@@ -74,10 +74,19 @@ function authUser(req) {
   return db.users.find((u) => u.id === payload.uid) || null;
 }
 
-function pricing(items, meta) {
+function shippingForState(meta, stateName) {
+  const subKey = String(stateName || "").trim();
+  const map = meta.shippingByState || {};
+  if (subKey && map[subKey] != null) return Number(map[subKey]) || 0;
+  return Number(meta.defaultShippingFee || meta.shippingFee || 4000);
+}
+
+function pricing(items, meta, stateName) {
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
-  const shippingFee =
-    subtotal === 0 || subtotal >= meta.freeShippingThreshold ? 0 : meta.shippingFee;
+  let shippingFee = 0;
+  if (subtotal > 0 && subtotal < (meta.freeShippingThreshold || 50000)) {
+    shippingFee = shippingForState(meta, stateName);
+  }
   return { subtotal, shippingFee, total: subtotal + shippingFee };
 }
 
@@ -160,6 +169,28 @@ async function handle(req, res) {
   try {
     if (method === "GET" && path === "/api/health") {
       return send(res, 200, { ok: true, service: "weartee", time: new Date().toISOString() });
+    }
+
+    
+    if (method === "GET" && path === "/api/shipping") {
+      const db = readDb();
+      const stateName = url.searchParams.get("state") || "";
+      const subtotal = Number(url.searchParams.get("subtotal") || 0);
+      const quote = pricing([{ price: subtotal, qty: 1 }], db.meta, stateName);
+      // pricing uses item sum; pass synthetic
+      const fee =
+        subtotal <= 0
+          ? 0
+          : subtotal >= (db.meta.freeShippingThreshold || 50000)
+            ? 0
+            : shippingForState(db.meta, stateName);
+      return send(res, 200, {
+        state: stateName,
+        subtotal,
+        shippingFee: fee,
+        freeShippingThreshold: db.meta.freeShippingThreshold || 50000,
+        shippingByState: db.meta.shippingByState || {},
+      });
     }
 
     if (method === "GET" && path === "/api/meta") {
@@ -286,7 +317,7 @@ async function handle(req, res) {
       const packed = sanitizeItems(body.items, db.products);
       if (packed.error) return send(res, 400, { error: packed.error });
 
-      const money = pricing(packed.items, db.meta);
+      const money = pricing(packed.items, db.meta, state);
       const order = {
         id: nextOrderId(db),
         date: new Date().toISOString(),
@@ -518,6 +549,60 @@ async function handle(req, res) {
       return send(res, 200, { cartId: key.startsWith("guest:") ? key.slice(6) : null, items: [] });
     }
 
+
+    // Serve frontend (shop + admin) from weartee-fixed when present
+    if (method === "GET" && !path.startsWith("/api")) {
+      const fs = require("fs");
+      const pathMod = require("path");
+      const FRONTEND_DIR =
+        process.env.FRONTEND_DIR ||
+        pathMod.join(__dirname, "..", "..", "weartee-fixed");
+      let rel = path === "/" ? "index.html" : path.replace(/^\//, "");
+      rel = rel.split("?")[0];
+      if (rel.includes("..")) return send(res, 400, { error: "Invalid path" });
+      const full = pathMod.join(FRONTEND_DIR, rel);
+      if (!full.startsWith(pathMod.resolve(FRONTEND_DIR))) {
+        return send(res, 403, { error: "Forbidden" });
+      }
+      if (fs.existsSync(full) && fs.statSync(full).isFile()) {
+        const ext = pathMod.extname(full).toLowerCase();
+        const types = {
+          ".html": "text/html; charset=utf-8",
+          ".js": "application/javascript; charset=utf-8",
+          ".css": "text/css; charset=utf-8",
+          ".json": "application/json",
+          ".png": "image/png",
+          ".jpg": "image/jpeg",
+          ".jpeg": "image/jpeg",
+          ".webp": "image/webp",
+          ".svg": "image/svg+xml",
+          ".ico": "image/x-icon",
+          ".woff2": "font/woff2",
+        };
+        const data = fs.readFileSync(full);
+        res.writeHead(200, {
+          "Content-Type": types[ext] || "application/octet-stream",
+          "Content-Length": data.length,
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(data);
+        return;
+      }
+      // SPA-style fallback for missing asset
+      if (!rel.includes(".")) {
+        const index = pathMod.join(FRONTEND_DIR, "index.html");
+        if (fs.existsSync(index)) {
+          const data = fs.readFileSync(index);
+          res.writeHead(200, {
+            "Content-Type": "text/html; charset=utf-8",
+            "Content-Length": data.length,
+          });
+          res.end(data);
+          return;
+        }
+      }
+    }
+
     return send(res, 404, { error: "Not found" });
   } catch (err) {
     console.error(err);
@@ -532,5 +617,7 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, "0.0.0.0", () => {
   readDb();
   console.log(`WEARTEE API listening on http://localhost:${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
+  console.log(`Shop:    http://localhost:${PORT}/`);
+  console.log(`Admin:   http://localhost:${PORT}/admin.html`);
+  console.log(`Health:  http://localhost:${PORT}/api/health`);
 });

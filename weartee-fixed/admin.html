@@ -241,7 +241,7 @@
       <p>Sign in with your admin key to manage orders, prices, and customer emails.</p>
       <div class="field">
         <label for="apiBase">API base URL</label>
-        <input id="apiBase" value="http://localhost:5050" />
+        <input id="apiBase" value="" placeholder="http://localhost:5050" />
       </div>
       <div class="field">
         <label for="adminKey">Admin key</label>
@@ -250,7 +250,8 @@
       <button class="btn btn-primary btn-block" id="loginBtn">Enter dashboard</button>
       <div class="error" id="loginError"></div>
       <p class="muted" style="margin-top:14px;font-size:0.8rem;">
-        Default key is <code>change-me-admin</code>. Set <code>ADMIN_KEY</code> on the server for production.
+        Default key is <code>change-me-admin</code>.<br>
+        Prefer opening: <code>http://localhost:5050/admin.html</code> (same server as the API).
       </p>
     </div>
   </div>
