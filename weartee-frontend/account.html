@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account — WEARTEE</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23B76E79'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='%23F4EBE4' font-family='Georgia' font-weight='bold'>W</text></svg>">
+</head>
+<body data-page="account">
+
+  <main class="container">
+    <nav class="crumbs">
+      <a href="index.html">Home</a><span class="sep">/</span><span class="here">Account</span>
+    </nav>
+    <div style="padding: 14px 0 0;">
+      <h1 class="page-title">My Account</h1>
+      <p class="page-sub">Your details, saved for faster checkout.</p>
+    </div>
+
+    <div class="account-layout">
+      <aside class="account-side">
+        <div class="account-user">
+          <div class="avatar" id="sideAvatar">J</div>
+          <div>
+            <b id="sideName">Jane Doe</b>
+            <span id="sideEmail">jane@example.com</span>
+          </div>
+        </div>
+        <nav class="account-nav">
+          <a href="account.html" class="active">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Account Info
+          </a>
+          <a href="orders.html">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V21H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+            My Orders
+          </a>
+          <a href="account.html#addresses">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Addresses
+          </a>
+          <button id="logoutBtn">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+            Logout
+          </button>
+        </nav>
+      </aside>
+
+      <div>
+        <div class="orders-card">
+          <div class="profile-head">
+            <div class="avatar" id="profileAvatar">J</div>
+            <div>
+              <h2 id="profileName">Jane Doe</h2>
+              <p id="profileEmail">jane@example.com</p>
+            </div>
+          </div>
+
+          <form id="profileForm" novalidate>
+            <h2 style="font-size:1.3rem; margin-bottom:20px;">Account Info</h2>
+            <div class="form-grid">
+              <div class="field full">
+                <label for="fullName">Full Name <span>*</span></label>
+                <input id="fullName" type="text" placeholder="Jane Doe" autocomplete="name">
+                <span class="err">Please enter your full name.</span>
+              </div>
+              <div class="field">
+                <label for="email">Email <span>*</span></label>
+                <input id="email" type="email" placeholder="jane@example.com" autocomplete="email">
+                <span class="err">Please enter a valid email.</span>
+              </div>
+              <div class="field">
+                <label for="phone">Phone Number <span>*</span></label>
+                <input id="phone" type="tel" placeholder="+234 800 000 0000" autocomplete="tel">
+                <span class="err">Please enter your phone number.</span>
+              </div>
+            </div>
+
+            <hr class="divider">
+
+            <h2 style="font-size:1.3rem; margin-bottom:20px;" id="addresses">Saved Address</h2>
+            <div class="form-grid">
+              <div class="field full">
+                <label for="address">Street Address</label>
+                <input id="address" type="text" placeholder="12 Adeola Odeku Street" autocomplete="street-address">
+              </div>
+              <div class="field">
+                <label for="city">City</label>
+                <input id="city" type="text" placeholder="Lagos" autocomplete="address-level2">
+              </div>
+              <div class="field">
+                <label for="stateInput">State</label>
+                <input id="stateInput" type="text" placeholder="Lagos" autocomplete="address-level1">
+              </div>
+            </div>
+
+            <div class="panel-nav" style="justify-content:flex-end;">
+              <button type="submit" class="btn btn-primary" id="saveBtn">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>window.WEARTEE_API = "http://localhost:5050";</script>
+  <script src="js/products.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/account.js"></script>
+</body>
+</html>

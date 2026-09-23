@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product — WEARTEE</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23B76E79'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='%23F4EBE4' font-family='Georgia' font-weight='bold'>W</text></svg>">
+</head>
+<body data-page="product">
+
+  <main class="container">
+    <nav class="crumbs">
+      <a href="index.html">Home</a><span class="sep">/</span>
+      <a href="shop.html">Shop</a><span class="sep">/</span>
+      <a href="#" id="crumbCat">Category</a><span class="sep">/</span>
+      <span class="here" id="crumbName">Product</span>
+    </nav>
+
+    <div class="pd-layout" id="pdLayout">
+      <div class="pd-media"><img id="pdImage" alt="" data-guard></div>
+
+      <div class="pd-info">
+        <a class="pd-cat-link" href="#" id="pdCat">Category</a>
+        <h1 class="pd-title" id="pdName">Product</h1>
+        <div class="pd-rating" id="pdRating"></div>
+        <div class="pd-price-row">
+          <span class="pd-price" id="pdPrice"></span>
+          <span class="badge badge-stock pd-stock">In Stock</span>
+        </div>
+
+        <hr class="pd-divider">
+
+        <div class="pd-option" id="pdColorOption">
+          <h4>Color <span id="pdColorName"></span></h4>
+          <div class="pd-colors" id="pdColors"></div>
+        </div>
+
+        <div class="pd-option">
+          <h4>Size <span id="sizeHint"></span></h4>
+          <div class="pd-sizes" id="pdSizes"></div>
+        </div>
+
+        <div class="pd-option">
+          <h4>Quantity</h4>
+          <div class="qty-row">
+            <div class="qty-stepper">
+              <button class="qty-btn" id="qtyMinus" aria-label="Decrease quantity">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+              </button>
+              <span class="qty-num" id="qtyNum">1</span>
+              <button class="qty-btn" id="qtyPlus" aria-label="Increase quantity">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pd-actions">
+          <button class="btn btn-primary" id="addBtn">Add to Cart</button>
+          <button class="btn btn-dark" id="buyBtn">Buy Now</button>
+        </div>
+
+        <hr class="pd-divider">
+
+        <div class="pd-perks">
+          <div class="perk">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18H3c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1h10c.6 0 1 .4 1 1v11"/><path d="M14 9h4l4 4v4c0 .6-.4 1-1 1h-2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+            Nationwide delivery
+          </div>
+          <div class="perk">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="m9 13 2.2 2.2L16 10"/></svg>
+            7-day easy exchange
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>You May Also Like</h2>
+        <a class="see-all" href="shop.html">Shop All</a>
+      </div>
+      <div class="carousel-wrap">
+        <button class="car-btn prev" data-car="relCarousel" aria-label="Scroll left">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div class="carousel" id="relCarousel"></div>
+        <button class="car-btn next" data-car="relCarousel" aria-label="Scroll right">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script>window.WEARTEE_API = "http://localhost:5050";</script>
+  <script src="js/products.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/product.js"></script>
+</body>
+</html>

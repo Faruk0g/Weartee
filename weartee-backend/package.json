@@ -1,0 +1,14 @@
+{
+  "name": "weartee-backend",
+  "version": "1.0.1",
+  "private": true,
+  "description": "WEARTEE shop API — zero npm dependencies, pure Node.js",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

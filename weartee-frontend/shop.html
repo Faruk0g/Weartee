@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop All — WEARTEE</title>
+  <meta name="description" content="Browse every WEARTEE style — dresses, two-piece sets, tops, skirts and bottoms.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23B76E79'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='%23F4EBE4' font-family='Georgia' font-weight='bold'>W</text></svg>">
+</head>
+<body data-page="shop">
+
+  <main class="container">
+    <nav class="crumbs">
+      <a href="index.html">Home</a><span class="sep">/</span><span class="here" id="crumbHere">Shop</span>
+    </nav>
+    <div style="padding: 14px 0 0;">
+      <h1 class="page-title">Shop All</h1>
+      <p class="page-sub" id="shopSub">Every piece, curated for you.</p>
+    </div>
+
+    <div class="shop-layout">
+      <aside class="filters" id="filters">
+        <div class="filters-head">
+          <h3>Filters</h3>
+          <button class="filters-clear" id="clearFilters">Clear all</button>
+        </div>
+        <div class="filter-group" style="border-top: none; padding-top: 0;">
+          <h4>Category</h4>
+          <div id="catFilters"></div>
+        </div>
+        <div class="filter-group">
+          <h4>Price Range</h4>
+          <div class="price-options" id="priceFilters"></div>
+        </div>
+        <div class="filter-group">
+          <h4>Size</h4>
+          <div class="size-grid" id="sizeFilters"></div>
+        </div>
+        <div class="filter-group">
+          <h4>Color</h4>
+          <div id="colorFilters"></div>
+        </div>
+      </aside>
+
+      <div>
+        <div class="shop-toolbar">
+          <button class="btn btn-secondary btn-sm filter-toggle" id="filterToggle">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            Filters
+          </button>
+          <p class="shop-count" id="shopCount"></p>
+          <div class="sort-box">
+            <label for="sortSelect">Sort by</label>
+            <select class="sort-select" id="sortSelect">
+              <option value="featured">Featured</option>
+              <option value="newest">Newest</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="rating">Top Rated</option>
+            </select>
+          </div>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+        <div id="emptyState"></div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>window.WEARTEE_API = "http://localhost:5050";</script>
+  <script src="js/products.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/shop.js"></script>
+</body>
+</html>

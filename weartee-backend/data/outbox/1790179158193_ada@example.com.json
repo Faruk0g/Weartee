@@ -1,0 +1,8 @@
+{
+  "to": "ada@example.com",
+  "subject": "Your WEARTEE order is on the way (#WT58813)",
+  "text": "Hi Ada Obi,\n\nGood news — your order has been shipped.\n\nRider arrives tomorrow\n\nOrder: #WT58813\nStatus: Shipped\nTotal: ₦29,500\n\nItems:\n• Armless 2 Piece Set (M / multi) × 1 — ₦26,000\n\nShip to:\n12 Broad St, Lagos — Lagos\nPhone: 08012345678\n\n— WEARTEE\nweartee.ng@gmail.com · 09012473305",
+  "status": "Shipped",
+  "createdAt": "2026-09-23T15:59:18.193Z",
+  "delivery": "outbox"
+}

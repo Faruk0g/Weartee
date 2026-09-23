@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — WEARTEE</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23B76E79'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='%23F4EBE4' font-family='Georgia' font-weight='bold'>W</text></svg>">
+</head>
+<body data-page="checkout">
+
+  <main class="container">
+    <nav class="crumbs">
+      <a href="index.html">Home</a><span class="sep">/</span>
+      <a href="cart.html">Cart</a><span class="sep">/</span><span class="here">Checkout</span>
+    </nav>
+    <div style="padding: 14px 0 0;">
+      <h1 class="page-title">Checkout</h1>
+      <p class="page-sub">Almost yours — just a few details.</p>
+    </div>
+
+    <div class="checkout-layout">
+      <div>
+        <div class="steps">
+          <div class="step active" data-step="1"><span class="step-dot">1</span><span class="step-name">Shipping</span></div>
+          <div class="step-line"></div>
+          <div class="step" data-step="2"><span class="step-dot">2</span><span class="step-name">Payment</span></div>
+          <div class="step-line"></div>
+          <div class="step" data-step="3"><span class="step-dot">3</span><span class="step-name">Review</span></div>
+        </div>
+
+        <form class="checkout-panel" id="checkoutForm" novalidate>
+
+          <div class="checkout-step" data-panel="1">
+            <h2>Shipping Information</h2>
+            <div class="form-grid">
+              <div class="field full">
+                <label for="fullName">Full Name <span>*</span></label>
+                <input id="fullName" name="fullName" type="text" placeholder="Jane Doe" autocomplete="name">
+                <span class="err">Please enter your full name.</span>
+              </div>
+              <div class="field">
+                <label for="email">Email <span>*</span></label>
+                <input id="email" name="email" type="email" placeholder="jane@example.com" autocomplete="email">
+                <span class="err">Please enter a valid email.</span>
+              </div>
+              <div class="field">
+                <label for="phone">Phone Number <span>*</span></label>
+                <input id="phone" name="phone" type="tel" placeholder="+234 800 000 0000" autocomplete="tel">
+                <span class="err">Please enter your phone number.</span>
+              </div>
+              <div class="field full">
+                <label for="address">Street Address <span>*</span></label>
+                <input id="address" name="address" type="text" placeholder="12 Adeola Odeku Street" autocomplete="street-address">
+                <span class="err">Please enter your address.</span>
+              </div>
+              <div class="field">
+                <label for="city">City <span>*</span></label>
+                <input id="city" name="city" type="text" placeholder="Lagos" autocomplete="address-level2">
+                <span class="err">Please enter your city.</span>
+              </div>
+              <div class="field">
+                <label for="state">State <span>*</span></label>
+                <select id="state" name="state">
+                  <option value="">Select state</option>
+                  <option>Abuja FCT</option><option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option>
+                  <option>Anambra</option><option>Bauchi</option><option>Bayelsa</option><option>Benue</option>
+                  <option>Borno</option><option>Cross River</option><option>Delta</option><option>Ebonyi</option>
+                  <option>Edo</option><option>Ekiti</option><option>Enugu</option><option>Gombe</option>
+                  <option>Imo</option><option>Jigawa</option><option>Kaduna</option><option>Kano</option>
+                  <option>Katsina</option><option>Kebbi</option><option>Kogi</option><option>Kwara</option>
+                  <option>Lagos</option><option>Nasarawa</option><option>Niger</option><option>Ogun</option>
+                  <option>Ondo</option><option>Osun</option><option>Oyo</option><option>Plateau</option>
+                  <option>Rivers</option><option>Sokoto</option><option>Taraba</option><option>Yobe</option>
+                  <option>Zamfara</option>
+                </select>
+                <span class="err">Please select your state.</span>
+              </div>
+              <div class="field full">
+                <label for="note">Delivery Note (optional)</label>
+                <textarea id="note" name="note" rows="3" placeholder="Anything our delivery team should know..."></textarea>
+              </div>
+            </div>
+            <div class="panel-nav">
+              <a href="cart.html" class="btn btn-secondary">Back to Cart</a>
+              <button type="button" class="btn btn-primary" data-next="1">Continue to Payment</button>
+            </div>
+          </div>
+
+          <div class="checkout-step" data-panel="2" hidden>
+            <h2>Payment Method</h2>
+            <div class="pay-options" id="payOptions">
+              <label class="pay-option active">
+                <input type="radio" name="payment" value="Card" checked>
+                <span class="po-ico">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                </span>
+                <span><b>Debit / Credit Card</b><span>Pay securely with your card</span></span>
+              </label>
+              <label class="pay-option">
+                <input type="radio" name="payment" value="Bank Transfer">
+                <span class="po-ico">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18"/><path d="M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"/><path d="M4 10v8M20 10v8M8 6h8"/><rect x="2" y="18" width="20" height="3" rx="1"/></svg>
+                </span>
+                <span><b>Bank Transfer</b><span>We'll send account details after you order</span></span>
+              </label>
+              <label class="pay-option">
+                <input type="radio" name="payment" value="Pay on Delivery">
+                <span class="po-ico">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+                </span>
+                <span><b>Pay on Delivery</b><span>Cash or POS at your doorstep</span></span>
+              </label>
+            </div>
+
+            <div class="card-fields" id="cardFields">
+              <div class="form-grid">
+                <div class="field full">
+                  <label for="cardNumber">Card Number <span>*</span></label>
+                  <input id="cardNumber" type="text" inputmode="numeric" placeholder="0000 0000 0000 0000" maxlength="23">
+                  <span class="err">Please enter your card number.</span>
+                </div>
+                <div class="field full">
+                  <label for="cardName">Name on Card <span>*</span></label>
+                  <input id="cardName" type="text" placeholder="JANE DOE">
+                  <span class="err">Please enter the name on your card.</span>
+                </div>
+                <div class="field">
+                  <label for="cardExpiry">Expiry <span>*</span></label>
+                  <input id="cardExpiry" type="text" placeholder="MM / YY" maxlength="7">
+                  <span class="err">Please enter the expiry date.</span>
+                </div>
+                <div class="field">
+                  <label for="cardCvc">CVC <span>*</span></label>
+                  <input id="cardCvc" type="text" inputmode="numeric" placeholder="123" maxlength="4">
+                  <span class="err">Please enter the CVC.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-nav">
+              <button type="button" class="btn btn-secondary" data-back="2">Back</button>
+              <button type="button" class="btn btn-primary" data-next="2">Continue to Review</button>
+            </div>
+          </div>
+
+          <div class="checkout-step" data-panel="3" hidden>
+            <h2>Review Your Order</h2>
+            <div class="review-block">
+              <h4>Shipping To <a href="#" data-edit="1">Edit</a></h4>
+              <p id="reviewShipping"></p>
+            </div>
+            <div class="review-block">
+              <h4>Payment Method <a href="#" data-edit="2">Edit</a></h4>
+              <p id="reviewPayment"></p>
+            </div>
+            <div class="review-block">
+              <h4>Your Items</h4>
+              <div class="review-items" id="reviewItems"></div>
+            </div>
+            <div class="panel-nav">
+              <button type="button" class="btn btn-secondary" data-back="3">Back</button>
+              <button type="submit" class="btn btn-primary" id="placeOrderBtn">Place Order</button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+      <aside class="summary-card">
+        <h3>Order Summary</h3>
+        <div class="review-items" id="sideItems" style="margin-bottom: 14px;"></div>
+        <div class="sum-row"><span>Subtotal</span><span id="sumSubtotal"></span></div>
+        <div class="sum-row"><span>Shipping</span><span id="sumShipping"></span></div>
+        <div class="sum-row total"><span>Total</span><span class="val" id="sumTotal"></span></div>
+        <p class="sum-note">You won't be charged until you place the order.</p>
+      </aside>
+    </div>
+  </main>
+
+  <script>window.WEARTEE_API = "http://localhost:5050";</script>
+  <script src="js/products.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/checkout.js"></script>
+</body>
+</html>

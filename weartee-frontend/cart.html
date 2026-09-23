@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Cart — WEARTEE</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23B76E79'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='%23F4EBE4' font-family='Georgia' font-weight='bold'>W</text></svg>">
+</head>
+<body data-page="cart">
+
+  <main class="container">
+    <nav class="crumbs">
+      <a href="index.html">Home</a><span class="sep">/</span><span class="here">Cart</span>
+    </nav>
+    <div style="padding: 14px 0 0;">
+      <h1 class="page-title">My Cart</h1>
+      <p class="page-sub" id="cartSub"></p>
+    </div>
+
+    <div class="cart-layout">
+      <div class="cart-list" id="cartList"></div>
+
+      <aside class="summary-card">
+        <h3>Order Summary</h3>
+        <div class="free-ship-bar" id="freeShipBar"></div>
+        <div class="sum-row"><span>Subtotal</span><span id="sumSubtotal"></span></div>
+        <div class="sum-row"><span>Shipping</span><span id="sumShipping"></span></div>
+        <div class="sum-row total"><span>Total</span><span class="val" id="sumTotal"></span></div>
+        <p class="sum-note">Shipping is flat ₦3,500 — free on orders over ₦50,000.</p>
+        <a href="checkout.html" class="btn btn-primary btn-block" id="checkoutBtn">Proceed to Checkout</a>
+        <a href="shop.html" class="btn btn-secondary btn-block mt-1">Continue Shopping</a>
+      </aside>
+    </div>
+  </main>
+
+  <script>window.WEARTEE_API = "http://localhost:5050";</script>
+  <script src="js/products.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/cart.js"></script>
+</body>
+</html>
