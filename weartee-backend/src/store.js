@@ -2,12 +2,27 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
+const IS_PROD =
+  process.env.NODE_ENV === "production" || process.env.RENDER === "true";
+const SECRET =
+  process.env.TOKEN_SECRET || (IS_PROD ? "" : "weartee-dev-secret");
+if (IS_PROD && SECRET.length < 32) {
+  throw new Error("Set TOKEN_SECRET (32+ characters) in the environment");
+}
+
 const DATA_DIR = path.join(__dirname, "..", "data");
 const DB_PATH = path.join(DATA_DIR, "db.json");
 const SEED_PATH = path.join(DATA_DIR, "products.seed.json");
 
 function emptyDb() {
-  return { users: [], sessions: [], orders: [], products: [], carts: {}, meta: {} };
+  return {
+    users: [],
+    sessions: [],
+    orders: [],
+    products: [],
+    carts: {},
+    meta: {},
+  };
 }
 
 function loadSeed() {
@@ -41,8 +56,10 @@ function readDb() {
     try {
       const seed = loadSeed();
       db.meta.shippingByState = seed.shippingByState || {};
-      db.meta.defaultShippingFee = seed.shippingFee || db.meta.shippingFee || 4000;
-      db.meta.freeShippingThreshold = db.meta.freeShippingThreshold || seed.freeShippingThreshold || 50000;
+      db.meta.defaultShippingFee =
+        seed.shippingFee || db.meta.shippingFee || 4000;
+      db.meta.freeShippingThreshold =
+        db.meta.freeShippingThreshold || seed.freeShippingThreshold || 50000;
     } catch (_) {}
   }
   return db;
@@ -62,22 +79,31 @@ function verifyPassword(password, stored) {
   const [salt, hash] = String(stored || "").split(":");
   if (!salt || !hash) return false;
   const next = crypto.scryptSync(password, salt, 32).toString("hex");
-  return crypto.timingSafeEqual(Buffer.from(hash, "hex"), Buffer.from(next, "hex"));
+  return crypto.timingSafeEqual(
+    Buffer.from(hash, "hex"),
+    Buffer.from(next, "hex"),
+  );
 }
 
 function signToken(payload) {
-  const secret = process.env.TOKEN_SECRET || "weartee-dev-secret";
-  const body = Buffer.from(JSON.stringify({ ...payload, exp: Date.now() + 1000 * 60 * 60 * 24 * 14 })).toString("base64url");
-  const sig = crypto.createHmac("sha256", secret).update(body).digest("base64url");
+  const body = Buffer.from(
+    JSON.stringify({ ...payload, exp: Date.now() + 1000 * 60 * 60 * 24 * 14 }),
+  ).toString("base64url");
+  const sig = crypto
+    .createHmac("sha256", SECRET)
+    .update(body)
+    .digest("base64url");
   return `${body}.${sig}`;
 }
 
 function readToken(token) {
   if (!token) return null;
-  const secret = process.env.TOKEN_SECRET || "weartee-dev-secret";
   const [body, sig] = String(token).split(".");
   if (!body || !sig) return null;
-  const expected = crypto.createHmac("sha256", secret).update(body).digest("base64url");
+  const expected = crypto
+    .createHmac("sha256", SECRET)
+    .update(body)
+    .digest("base64url");
   if (expected !== sig) return null;
   try {
     const data = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));

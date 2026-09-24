@@ -14,7 +14,19 @@ const {
 } = require("./store");
 
 const PORT = Number(process.env.PORT) || 5050;
-const ADMIN_KEY = process.env.ADMIN_KEY || "weartee";
+
+const IS_PROD =
+  process.env.NODE_ENV === "production" || process.env.RENDER === "true";
+const ADMIN_KEY = process.env.ADMIN_KEY || (IS_PROD ? "" : "weartee");
+if (IS_PROD && ADMIN_KEY.length < 12) {
+  throw new Error("Set ADMIN_KEY (12+ characters) in the environment");
+}
+
+function isAdmin(req) {
+  const given = Buffer.from(String(req.headers["x-admin-key"] || ""));
+  const real = Buffer.from(ADMIN_KEY);
+  return given.length === real.length && crypto.timingSafeEqual(given, real);
+}
 
 function publicUser(u) {
   return {
@@ -191,8 +203,6 @@ async function handle(req, res) {
       const db = readDb();
       const stateName = url.searchParams.get("state") || "";
       const subtotal = Number(url.searchParams.get("subtotal") || 0);
-      const quote = pricing([{ price: subtotal, qty: 1 }], db.meta, stateName);
-      // pricing uses item sum; pass synthetic
       const fee =
         subtotal <= 0
           ? 0
@@ -413,7 +423,7 @@ async function handle(req, res) {
     }
 
     if (method === "GET" && path === "/api/admin/orders") {
-      if (req.headers["x-admin-key"] !== ADMIN_KEY) {
+      if (!isAdmin(req)) {
         return send(res, 401, { error: "Admin key required" });
       }
       const db = readDb();
@@ -421,13 +431,10 @@ async function handle(req, res) {
     }
 
     if (method === "GET" && path.startsWith("/api/admin/orders/")) {
-      if (req.headers["x-admin-key"] !== ADMIN_KEY) {
+      if (!isAdmin(req)) {
         return send(res, 401, { error: "Admin key required" });
       }
       const id = decodeURIComponent(path.slice("/api/admin/orders/".length));
-      if (!id || id.includes("/")) {
-        /* fall through to more specific routes if needed */
-      }
       const db = readDb();
       const order = db.orders.find((o) => o.id === id);
       if (!order) return send(res, 404, { error: "Order not found" });
@@ -439,7 +446,7 @@ async function handle(req, res) {
       path.startsWith("/api/admin/orders/") &&
       !path.endsWith("/notify")
     ) {
-      if (req.headers["x-admin-key"] !== ADMIN_KEY) {
+      if (!isAdmin(req)) {
         return send(res, 401, { error: "Admin key required" });
       }
       const id = decodeURIComponent(path.slice("/api/admin/orders/".length));
@@ -517,7 +524,7 @@ async function handle(req, res) {
       method === "POST" &&
       path.match(/^\/api\/admin\/orders\/[^/]+\/notify$/)
     ) {
-      if (req.headers["x-admin-key"] !== ADMIN_KEY) {
+      if (!isAdmin(req)) {
         return send(res, 401, { error: "Admin key required" });
       }
       const id = decodeURIComponent(path.split("/")[4]);
@@ -538,7 +545,7 @@ async function handle(req, res) {
     }
 
     if (method === "GET" && path === "/api/admin/products") {
-      if (req.headers["x-admin-key"] !== ADMIN_KEY) {
+      if (!isAdmin(req)) {
         return send(res, 401, { error: "Admin key required" });
       }
       const db = readDb();
@@ -546,7 +553,7 @@ async function handle(req, res) {
     }
 
     if (method === "PATCH" && path.startsWith("/api/admin/products/")) {
-      if (req.headers["x-admin-key"] !== ADMIN_KEY) {
+      if (!isAdmin(req)) {
         return send(res, 401, { error: "Admin key required" });
       }
       const id = decodeURIComponent(path.slice("/api/admin/products/".length));
@@ -582,7 +589,6 @@ async function handle(req, res) {
       let key = resolveCartKey(req, url);
       const body = await readBody(req);
       if (!key) {
-        // create guest cart id if client didn't send one
         const newId = crypto.randomBytes(12).toString("hex");
         key = "guest:" + newId;
       }
