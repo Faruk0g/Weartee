@@ -2,14 +2,30 @@ const STATUS_FLOW = ["Confirmed", "Shipped", "Out for Delivery", "Delivered"];
 
 document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
-  let order = Orders.find(params.get("id"));
-  if (!order && params.get("id") && window.WearteeAPI) {
-    try {
-      const res = await window.WearteeAPI.api("/api/orders/" + encodeURIComponent(params.get("id")));
-      order = res.order;
-      if (order) Orders.add(order);
-    } catch (err) {
-      console.warn("Remote order lookup failed", err);
+  const id = params.get("id");
+  let order = Orders.find(id);
+
+  if (id && window.WearteeAPI) {
+    const email =
+      (order && order.shipping && order.shipping.email) ||
+      params.get("email") ||
+      Profile.get().email ||
+      "";
+    if (email) {
+      try {
+        const res = await window.WearteeAPI.api(
+          "/api/orders/" +
+            encodeURIComponent(id) +
+            "?email=" +
+            encodeURIComponent(email),
+        );
+        if (res.order) {
+          order = res.order;
+          Orders.add(order);
+        }
+      } catch (err) {
+        console.warn("Remote order lookup failed", err);
+      }
     }
   }
 
@@ -20,7 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
         </div>
         <h3>Order not found</h3>
-        <p>This order doesn't exist — it may have been placed in another browser.</p>
+        <p>We couldn't find this order. It may have been placed in another browser, or the email doesn't match.</p>
         <a href="orders.html" class="btn btn-primary btn-sm">View My Orders</a>
       </div>`;
     return;
@@ -29,7 +45,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.title = `Order #${order.id} — WEARTEE`;
   document.getElementById("crumbOrder").textContent = `#${order.id}`;
   document.getElementById("odTitle").textContent = `Order #${order.id}`;
-  document.getElementById("odDate").textContent = `Placed ${formatDate(order.date)}`;
+  document.getElementById("odDate").textContent =
+    `Placed ${formatDate(order.date)}`;
   document.getElementById("odStatus").innerHTML = statusBadge(order.status);
 
   if (params.get("placed") === "1") {
@@ -67,13 +84,15 @@ document.addEventListener("DOMContentLoaded", async () => {
           <div class="oi-meta">${i.size ? "Size " + i.size : ""}${i.color && i.color !== "multi" ? " · " + i.color : ""} · Qty ${i.qty}</div>
         </div>
         <div class="oi-price"><b>${formatPrice(i.price * i.qty)}</b><span>${formatPrice(i.price)} each</span></div>
-      </div>`
+      </div>`,
     )
     .join("");
 
   document.getElementById("odAddress").innerHTML =
     `${order.shipping.name}<br>${order.shipping.address}, ${order.shipping.city} — ${order.shipping.state}<br>${order.shipping.phone}` +
-    (order.shipping.note ? `<br><em style="color:var(--muted);">Note: ${order.shipping.note}</em>` : "");
+    (order.shipping.note
+      ? `<br><em style="color:var(--muted);">Note: ${order.shipping.note}</em>`
+      : "");
 
   document.getElementById("odPayment").textContent =
     order.payment === "Card"
@@ -83,8 +102,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const itemCount = order.items.reduce((n, i) => n + i.qty, 0);
   document.getElementById("sumItemsLabel").textContent = `Items (${itemCount})`;
   document.getElementById("sumItems").textContent = formatPrice(order.subtotal);
-  document.getElementById("sumSubtotal").textContent = formatPrice(order.subtotal);
-  document.getElementById("sumShipping").textContent = order.shippingFee === 0 ? "Free" : formatPrice(order.shippingFee);
+  document.getElementById("sumSubtotal").textContent = formatPrice(
+    order.subtotal,
+  );
+  document.getElementById("sumShipping").textContent =
+    order.shippingFee === 0 ? "Free" : formatPrice(order.shippingFee);
   document.getElementById("sumTotal").textContent = formatPrice(order.total);
 
   guardImages(document);

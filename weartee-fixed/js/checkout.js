@@ -25,18 +25,42 @@ function validateStep(step) {
     if (!valid) ok = false;
   };
   if (step === 1) {
-    mark("fullName", document.getElementById("fullName").value.trim().length >= 2);
-    mark("email", /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById("email").value.trim()));
+    mark(
+      "fullName",
+      document.getElementById("fullName").value.trim().length >= 2,
+    );
+    mark(
+      "email",
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        document.getElementById("email").value.trim(),
+      ),
+    );
     mark("phone", document.getElementById("phone").value.trim().length >= 7);
-    mark("address", document.getElementById("address").value.trim().length >= 4);
+    mark(
+      "address",
+      document.getElementById("address").value.trim().length >= 4,
+    );
     mark("city", document.getElementById("city").value.trim().length >= 2);
     mark("state", !!document.getElementById("state").value);
   }
   if (step === 2 && getPaymentMethod() === "Card") {
-    mark("cardNumber", document.getElementById("cardNumber").value.replace(/\D/g, "").length >= 12);
-    mark("cardName", document.getElementById("cardName").value.trim().length >= 2);
-    mark("cardExpiry", /^\d{2}\s*\/\s*\d{2}$/.test(document.getElementById("cardExpiry").value));
-    mark("cardCvc", document.getElementById("cardCvc").value.replace(/\D/g, "").length >= 3);
+    mark(
+      "cardNumber",
+      document.getElementById("cardNumber").value.replace(/\D/g, "").length >=
+        12,
+    );
+    mark(
+      "cardName",
+      document.getElementById("cardName").value.trim().length >= 2,
+    );
+    mark(
+      "cardExpiry",
+      /^\d{2}\s*\/\s*\d{2}$/.test(document.getElementById("cardExpiry").value),
+    );
+    mark(
+      "cardCvc",
+      document.getElementById("cardCvc").value.replace(/\D/g, "").length >= 3,
+    );
   }
   return ok;
 }
@@ -57,7 +81,7 @@ function itemsHTML(items) {
           <span class="ri-meta">${i.size ? "Size " + i.size : ""}${i.color && i.color !== "multi" ? " · " + i.color : ""} · Qty ${i.qty}</span>
         </span>
         <span class="ri-price">${formatPrice(i.price * i.qty)}</span>
-      </div>`
+      </div>`,
     )
     .join("");
 }
@@ -78,7 +102,9 @@ function renderSummary() {
   if (shipping > 0 && stateName) shipLabel += ` (${stateName})`;
   if (shipping > 0 && !stateName) shipLabel = "Select state";
   document.getElementById("sumShipping").textContent = shipLabel;
-  document.getElementById("sumTotal").textContent = formatPrice(subtotal + shipping);
+  document.getElementById("sumTotal").textContent = formatPrice(
+    subtotal + shipping,
+  );
 
   if (currentStep === 3) {
     document.getElementById("reviewItems").innerHTML = itemsHTML(items);
@@ -98,6 +124,7 @@ async function placeOrder() {
   if (!items.length) return;
   const buyNow = Cart.isBuyNow() && Cart.pendingCheckout();
   const btn = document.getElementById("placeOrderBtn");
+  const btnLabel = btn ? btn.textContent : "";
   if (btn) {
     btn.disabled = true;
     btn.textContent = "Placing order…";
@@ -105,7 +132,12 @@ async function placeOrder() {
 
   const f = (id) => document.getElementById(id).value.trim();
   const payload = {
-    items: items.map((i) => ({ id: i.id, size: i.size, color: i.color, qty: i.qty })),
+    items: items.map((i) => ({
+      id: i.id,
+      size: i.size,
+      color: i.color,
+      qty: i.qty,
+    })),
     shipping: {
       name: f("fullName"),
       email: f("email"),
@@ -120,29 +152,28 @@ async function placeOrder() {
 
   let order = null;
   try {
-    if (window.WearteeAPI) {
-      const res = await window.WearteeAPI.api("/api/orders", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-      order = res.order;
-    }
+    if (!window.WearteeAPI)
+      throw new Error("Shop is not connected to the server");
+    const res = await window.WearteeAPI.api("/api/orders", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    order = res.order;
   } catch (err) {
-    console.warn("API order failed, saving locally", err);
+    console.warn("Order failed", err);
+    toast(
+      err.status
+        ? err.message
+        : "Could not reach the server. Please check your connection and try again.",
+    );
   }
 
   if (!order) {
-    order = {
-      id: "WT" + String(Math.floor(10000 + Math.random() * 89999)),
-      date: new Date().toISOString(),
-      status: "Confirmed",
-      items: items.map((i) => ({ ...i })),
-      shipping: payload.shipping,
-      payment: payload.payment,
-      subtotal: Cart.lineSubtotal(items),
-      shippingFee: Cart.lineShipping(items, payload.shipping.state),
-      total: Cart.lineTotal(items, payload.shipping.state),
-    };
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = btnLabel;
+    }
+    return;
   }
 
   Orders.add(order);
@@ -211,7 +242,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.querySelectorAll("[data-back]").forEach((btn) => {
-    btn.addEventListener("click", () => goToStep(parseInt(btn.dataset.back, 10) - 1));
+    btn.addEventListener("click", () =>
+      goToStep(parseInt(btn.dataset.back, 10) - 1),
+    );
   });
 
   document.querySelectorAll("[data-edit]").forEach((link) => {

@@ -1,15 +1,19 @@
 function renderAccountSide() {
   const profile = Profile.get();
   document.getElementById("userAvatar").textContent = initialsOf(profile.name);
-  document.getElementById("userName").textContent = profile.name || "Guest Shopper";
-  document.getElementById("userEmail").textContent = profile.email || "Not set yet";
+  document.getElementById("userName").textContent =
+    profile.name || "Guest Shopper";
+  document.getElementById("userEmail").textContent =
+    profile.email || "Not set yet";
 }
 
 function renderOrders() {
   const orders = Orders.all();
   const content = document.getElementById("ordersContent");
   document.getElementById("ordersSub").textContent =
-    orders.length === 0 ? "" : `${orders.length} order${orders.length === 1 ? "" : "s"} placed with WEARTEE.`;
+    orders.length === 0
+      ? ""
+      : `${orders.length} order${orders.length === 1 ? "" : "s"} placed with WEARTEE.`;
 
   if (orders.length === 0) {
     content.innerHTML = `
@@ -34,7 +38,7 @@ function renderOrders() {
         <td>${statusBadge(o.status)}</td>
         <td style="font-weight:600;">${formatPrice(o.total)}</td>
         <td><a class="btn btn-secondary btn-sm" href="order-details.html?id=${o.id}">View</a></td>
-      </tr>`
+      </tr>`,
     )
     .join("");
 
@@ -51,7 +55,7 @@ function renderOrders() {
           <b>${formatPrice(o.total)}</b>
           <a class="btn btn-secondary btn-sm" href="order-details.html?id=${o.id}">View</a>
         </div>
-      </div>`
+      </div>`,
     )
     .join("");
 
@@ -67,14 +71,26 @@ function renderOrders() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   renderAccountSide();
-  if (window.WearteeAPI) {
+
+  // Refresh the status of orders saved in this browser (ID + email must match)
+  const local = Orders.all();
+  if (window.WearteeAPI && local.length) {
     try {
-      const profile = Profile.get();
-      const q = profile.email ? ("?email=" + encodeURIComponent(profile.email)) : "";
-      const res = await window.WearteeAPI.api("/api/orders" + q);
-      if (Array.isArray(res.orders)) Orders.save(res.orders);
+      const res = await window.WearteeAPI.api("/api/orders/lookup", {
+        method: "POST",
+        body: JSON.stringify({
+          orders: local.map((o) => ({
+            id: o.id,
+            email: o.shipping && o.shipping.email,
+          })),
+        }),
+      });
+      if (Array.isArray(res.orders) && res.orders.length) {
+        const fresh = new Map(res.orders.map((o) => [o.id, o]));
+        Orders.save(local.map((o) => fresh.get(o.id) || o));
+      }
     } catch (err) {
-      console.warn("Could not load remote orders", err);
+      console.warn("Could not refresh orders", err);
     }
   }
   renderOrders();
