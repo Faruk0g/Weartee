@@ -1,17 +1,11 @@
+require("./env");
 const http = require("http");
 const { URL } = require("url");
 const crypto = require("crypto");
 const { notifyOrder } = require("./mail");
-const {
-  readDb,
-  writeDb,
-  hashPassword,
-  verifyPassword,
-  signToken,
-  readToken,
-  nextOrderId,
-  STATUS_FLOW,
-} = require("./store");
+const store = require("./store");
+const { hashPassword, verifyPassword, signToken, readToken, STATUS_FLOW } =
+  store;
 
 const PORT = Number(process.env.PORT) || 5050;
 
@@ -26,6 +20,12 @@ function isAdmin(req) {
   const given = Buffer.from(String(req.headers["x-admin-key"] || ""));
   const real = Buffer.from(ADMIN_KEY);
   return given.length === real.length && crypto.timingSafeEqual(given, real);
+}
+
+function httpError(status, message) {
+  const err = new Error(message);
+  err.status = status;
+  return err;
 }
 
 function publicUser(u) {
@@ -60,7 +60,7 @@ function readBody(req) {
     req.on("data", (chunk) => {
       size += chunk.length;
       if (size > 1_000_000) {
-        reject(new Error("Body too large"));
+        reject(httpError(413, "Body too large"));
         req.destroy();
         return;
       }
@@ -71,20 +71,19 @@ function readBody(req) {
       try {
         resolve(JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}"));
       } catch {
-        reject(new Error("Invalid JSON body"));
+        reject(httpError(400, "Invalid JSON body"));
       }
     });
     req.on("error", reject);
   });
 }
 
-function authUser(req) {
+async function authUser(req) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
   const payload = readToken(token);
   if (!payload || !payload.uid) return null;
-  const db = readDb();
-  return db.users.find((u) => u.id === payload.uid) || null;
+  return store.getUserById(payload.uid);
 }
 
 function shippingForState(meta, stateName) {
@@ -131,8 +130,8 @@ function sanitizeItems(rawItems, products) {
   return { items };
 }
 
-function resolveCartKey(req, url) {
-  const user = authUser(req);
+async function resolveCartKey(req, url) {
+  const user = await authUser(req);
   if (user) return "user:" + user.id;
   const fromHeader = String(req.headers["x-cart-id"] || "").trim();
   const fromQuery = String(url.searchParams.get("cartId") || "").trim();
@@ -200,32 +199,31 @@ async function handle(req, res) {
     }
 
     if (method === "GET" && path === "/api/shipping") {
-      const db = readDb();
+      const meta = await store.getMeta();
       const stateName = url.searchParams.get("state") || "";
       const subtotal = Number(url.searchParams.get("subtotal") || 0);
       const fee =
         subtotal <= 0
           ? 0
-          : subtotal >= (db.meta.freeShippingThreshold || 50000)
+          : subtotal >= meta.freeShippingThreshold
             ? 0
-            : shippingForState(db.meta, stateName);
+            : shippingForState(meta, stateName);
       return send(res, 200, {
         state: stateName,
         subtotal,
         shippingFee: fee,
-        freeShippingThreshold: db.meta.freeShippingThreshold || 50000,
-        shippingByState: db.meta.shippingByState || {},
+        freeShippingThreshold: meta.freeShippingThreshold,
+        shippingByState: meta.shippingByState || {},
       });
     }
 
     if (method === "GET" && path === "/api/meta") {
-      const db = readDb();
-      return send(res, 200, { ...db.meta, statusFlow: STATUS_FLOW });
+      const meta = await store.getMeta();
+      return send(res, 200, { ...meta, statusFlow: STATUS_FLOW });
     }
 
     if (method === "GET" && path === "/api/products") {
-      const db = readDb();
-      let list = db.products.slice();
+      let list = await store.listProducts();
       const categories = url.searchParams.getAll("category").filter(Boolean);
       if (categories.length)
         list = list.filter((p) => categories.includes(p.category));
@@ -241,8 +239,7 @@ async function handle(req, res) {
 
     if (method === "GET" && path.startsWith("/api/products/")) {
       const id = decodeURIComponent(path.slice("/api/products/".length));
-      const db = readDb();
-      const product = db.products.find((p) => p.id === id);
+      const product = await store.getProduct(id);
       if (!product) return send(res, 404, { error: "Product not found" });
       return send(res, 200, { product });
     }
@@ -260,8 +257,7 @@ async function handle(req, res) {
           error: "Password must be at least 6 characters",
         });
       }
-      const db = readDb();
-      if (db.users.some((u) => u.email === cleanEmail)) {
+      if (await store.getUserByEmail(cleanEmail)) {
         return send(res, 409, {
           error: "An account with that email already exists",
         });
@@ -277,8 +273,7 @@ async function handle(req, res) {
         passwordHash: hashPassword(String(body.password)),
         createdAt: new Date().toISOString(),
       };
-      db.users.push(user);
-      writeDb(db);
+      await store.createUser(user);
       return send(res, 201, {
         token: signToken({ uid: user.id }),
         user: publicUser(user),
@@ -291,8 +286,7 @@ async function handle(req, res) {
         .trim()
         .toLowerCase();
       const password = String(body.password || "");
-      const db = readDb();
-      const user = db.users.find((u) => u.email === cleanEmail);
+      const user = await store.getUserByEmail(cleanEmail);
       if (!user || !verifyPassword(password, user.passwordHash)) {
         return send(res, 401, { error: "Invalid email or password" });
       }
@@ -303,17 +297,16 @@ async function handle(req, res) {
     }
 
     if (method === "GET" && path === "/api/me") {
-      const user = authUser(req);
+      const user = await authUser(req);
       if (!user) return send(res, 401, { error: "Sign in required" });
       return send(res, 200, { user: publicUser(user) });
     }
 
     if (method === "PUT" && path === "/api/me") {
-      const user = authUser(req);
+      const user = await authUser(req);
       if (!user) return send(res, 401, { error: "Sign in required" });
       const body = await readBody(req);
-      const db = readDb();
-      const row = db.users.find((u) => u.id === user.id);
+      const row = { ...user };
       for (const key of ["name", "phone", "address", "city", "state"]) {
         if (body[key] !== undefined) row[key] = String(body[key] || "").trim();
       }
@@ -322,19 +315,19 @@ async function handle(req, res) {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           return send(res, 400, { error: "Valid email required" });
         }
-        if (db.users.some((u) => u.email === email && u.id !== row.id)) {
+        const other = await store.getUserByEmail(email);
+        if (other && other.id !== row.id) {
           return send(res, 409, { error: "Email already in use" });
         }
         row.email = email;
       }
-      writeDb(db);
+      await store.saveUser(row);
       return send(res, 200, { user: publicUser(row) });
     }
 
     if (method === "POST" && path === "/api/orders") {
       const body = await readBody(req);
-      const db = readDb();
-      const user = authUser(req);
+      const user = await authUser(req);
       const shipping = body.shipping || {};
       const name = String(shipping.name || user?.name || "").trim();
       const email = String(shipping.email || user?.email || "")
@@ -361,12 +354,16 @@ async function handle(req, res) {
         ? body.payment
         : "Pay on Delivery";
 
-      const packed = sanitizeItems(body.items, db.products);
+      const [products, meta] = await Promise.all([
+        store.listProducts(),
+        store.getMeta(),
+      ]);
+      const packed = sanitizeItems(body.items, products);
       if (packed.error) return send(res, 400, { error: packed.error });
 
-      const money = pricing(packed.items, db.meta, state);
+      const money = pricing(packed.items, meta, state);
       const order = {
-        id: nextOrderId(db),
+        id: "",
         date: new Date().toISOString(),
         status: "Confirmed",
         userId: user?.id || null,
@@ -386,38 +383,44 @@ async function handle(req, res) {
         total: money.total,
       };
 
-      db.orders.unshift(order);
+      await store.createOrder(order);
+
       if (user) {
-        const u = db.users.find((x) => x.id === user.id);
-        u.name = name;
-        u.email = email;
-        u.phone = phone;
-        u.address = address;
-        u.city = city;
-        u.state = state;
+        try {
+          await store.saveUser({
+            ...user,
+            name,
+            email,
+            phone,
+            address,
+            city,
+            state,
+          });
+        } catch (err) {
+          // the order is already saved, so a profile update problem must not fail it
+          console.warn("Could not update profile after order:", err.message);
+        }
       }
-      writeDb(db);
       return send(res, 201, { order });
     }
 
     if (method === "GET" && path === "/api/orders") {
-      const db = readDb();
-      const user = authUser(req);
+      const user = await authUser(req);
       const email = String(url.searchParams.get("email") || user?.email || "")
         .trim()
         .toLowerCase();
       if (!user && !email)
         return send(res, 400, { error: "Email or sign-in required" });
-      const list = db.orders.filter(
-        (o) => (user && o.userId === user.id) || o.shipping.email === email,
-      );
-      return send(res, 200, { orders: list });
+      const orders = await store.listOrdersFor({
+        email,
+        userId: user ? user.id : null,
+      });
+      return send(res, 200, { orders });
     }
 
     if (method === "GET" && path.startsWith("/api/orders/")) {
       const id = decodeURIComponent(path.slice("/api/orders/".length));
-      const db = readDb();
-      const order = db.orders.find((o) => o.id === id);
+      const order = await store.getOrder(id);
       if (!order) return send(res, 404, { error: "Order not found" });
       return send(res, 200, { order });
     }
@@ -426,8 +429,8 @@ async function handle(req, res) {
       if (!isAdmin(req)) {
         return send(res, 401, { error: "Admin key required" });
       }
-      const db = readDb();
-      return send(res, 200, { orders: db.orders, statusFlow: STATUS_FLOW });
+      const orders = await store.listAllOrders();
+      return send(res, 200, { orders, statusFlow: STATUS_FLOW });
     }
 
     if (method === "GET" && path.startsWith("/api/admin/orders/")) {
@@ -435,8 +438,7 @@ async function handle(req, res) {
         return send(res, 401, { error: "Admin key required" });
       }
       const id = decodeURIComponent(path.slice("/api/admin/orders/".length));
-      const db = readDb();
-      const order = db.orders.find((o) => o.id === id);
+      const order = await store.getOrder(id);
       if (!order) return send(res, 404, { error: "Order not found" });
       return send(res, 200, { order });
     }
@@ -451,8 +453,7 @@ async function handle(req, res) {
       }
       const id = decodeURIComponent(path.slice("/api/admin/orders/".length));
       const body = await readBody(req);
-      const db = readDb();
-      const order = db.orders.find((o) => o.id === id);
+      const order = await store.getOrder(id);
       if (!order) return send(res, 404, { error: "Order not found" });
 
       const prevStatus = order.status;
@@ -487,7 +488,8 @@ async function handle(req, res) {
           return send(res, 400, { error: "Order must keep at least one item" });
         }
         order.items = nextItems;
-        const money = pricing(order.items, db.meta);
+        const meta = await store.getMeta();
+        const money = pricing(order.items, meta);
         if (body.shippingFee !== undefined) {
           order.shippingFee = Math.max(0, Number(body.shippingFee) || 0);
           order.subtotal = money.subtotal;
@@ -503,7 +505,7 @@ async function handle(req, res) {
       }
 
       order.updatedAt = new Date().toISOString();
-      writeDb(db);
+      await store.saveOrder(order);
 
       let emailResult = null;
       if (body.sendEmail) {
@@ -529,13 +531,12 @@ async function handle(req, res) {
       }
       const id = decodeURIComponent(path.split("/")[4]);
       const body = await readBody(req);
-      const db = readDb();
-      const order = db.orders.find((o) => o.id === id);
+      const order = await store.getOrder(id);
       if (!order) return send(res, 404, { error: "Order not found" });
       if (body.status && STATUS_FLOW.includes(String(body.status))) {
         order.status = String(body.status);
         order.updatedAt = new Date().toISOString();
-        writeDb(db);
+        await store.saveOrder(order);
       }
       const emailResult = await notifyOrder(order, {
         status: order.status,
@@ -548,8 +549,8 @@ async function handle(req, res) {
       if (!isAdmin(req)) {
         return send(res, 401, { error: "Admin key required" });
       }
-      const db = readDb();
-      return send(res, 200, { products: db.products });
+      const products = await store.listProducts();
+      return send(res, 200, { products });
     }
 
     if (method === "PATCH" && path.startsWith("/api/admin/products/")) {
@@ -558,8 +559,7 @@ async function handle(req, res) {
       }
       const id = decodeURIComponent(path.slice("/api/admin/products/".length));
       const body = await readBody(req);
-      const db = readDb();
-      const product = db.products.find((p) => p.id === id);
+      const product = await store.getProduct(id);
       if (!product) return send(res, 404, { error: "Product not found" });
       if (body.price !== undefined)
         product.price = Math.max(0, Number(body.price) || 0);
@@ -567,18 +567,17 @@ async function handle(req, res) {
         product.name = String(body.name).trim() || product.name;
       if (body.category !== undefined)
         product.category = String(body.category).trim() || product.category;
-      writeDb(db);
+      await store.saveProduct(product);
       return send(res, 200, { product });
     }
 
     if (method === "GET" && path === "/api/cart") {
-      const key = resolveCartKey(req, url);
+      const key = await resolveCartKey(req, url);
       if (!key)
         return send(res, 400, {
           error: "Missing cart id (send x-cart-id header) or sign in",
         });
-      const db = readDb();
-      const items = (db.carts[key] && db.carts[key].items) || [];
+      const items = await store.getCart(key);
       return send(res, 200, {
         cartId: key.startsWith("guest:") ? key.slice(6) : null,
         items,
@@ -586,20 +585,16 @@ async function handle(req, res) {
     }
 
     if (method === "PUT" && path === "/api/cart") {
-      let key = resolveCartKey(req, url);
+      let key = await resolveCartKey(req, url);
       const body = await readBody(req);
       if (!key) {
         const newId = crypto.randomBytes(12).toString("hex");
         key = "guest:" + newId;
       }
-      const db = readDb();
-      const packed = normalizeCartItems(body.items || [], db.products);
+      const products = await store.listProducts();
+      const packed = normalizeCartItems(body.items || [], products);
       if (packed.error) return send(res, 400, { error: packed.error });
-      db.carts[key] = {
-        items: packed.items,
-        updatedAt: new Date().toISOString(),
-      };
-      writeDb(db);
+      await store.saveCart(key, packed.items);
       return send(res, 200, {
         cartId: key.startsWith("guest:") ? key.slice(6) : null,
         items: packed.items,
@@ -607,11 +602,9 @@ async function handle(req, res) {
     }
 
     if (method === "DELETE" && path === "/api/cart") {
-      const key = resolveCartKey(req, url);
+      const key = await resolveCartKey(req, url);
       if (!key) return send(res, 400, { error: "Missing cart id or sign in" });
-      const db = readDb();
-      db.carts[key] = { items: [], updatedAt: new Date().toISOString() };
-      writeDb(db);
+      await store.saveCart(key, []);
       return send(res, 200, {
         cartId: key.startsWith("guest:") ? key.slice(6) : null,
         items: [],
@@ -625,9 +618,20 @@ async function handle(req, res) {
       const FRONTEND_DIR =
         process.env.FRONTEND_DIR ||
         pathMod.join(__dirname, "..", "..", "weartee-fixed");
-      let rel = path === "/" ? "index.html" : path.replace(/^\//, "");
-      rel = rel.split("?")[0];
-      if (rel.includes("..")) return send(res, 400, { error: "Invalid path" });
+
+      let rel;
+      try {
+        rel =
+          path === "/"
+            ? "index.html"
+            : decodeURIComponent(path).replace(/^\/+/, "");
+      } catch {
+        return send(res, 400, { error: "Invalid path" });
+      }
+      if (rel.includes("..") || rel.includes("\0")) {
+        return send(res, 400, { error: "Invalid path" });
+      }
+
       const full = pathMod.join(FRONTEND_DIR, rel);
       if (!full.startsWith(pathMod.resolve(FRONTEND_DIR))) {
         return send(res, 403, { error: "Forbidden" });
@@ -674,7 +678,12 @@ async function handle(req, res) {
     return send(res, 404, { error: "Not found" });
   } catch (err) {
     console.error(err);
-    return send(res, 500, { error: err.message || "Server error" });
+    const status = err.status || 500;
+    const message =
+      status === 500 && IS_PROD
+        ? "Server error"
+        : err.message || "Server error";
+    return send(res, status, { error: message });
   }
 }
 
@@ -682,10 +691,17 @@ const server = http.createServer((req, res) => {
   handle(req, res);
 });
 
-server.listen(PORT, "0.0.0.0", () => {
-  readDb();
-  console.log(`WEARTEE API listening on http://localhost:${PORT}`);
-  console.log(`Shop:    http://localhost:${PORT}/`);
-  console.log(`Admin:   http://localhost:${PORT}/admin.html`);
-  console.log(`Health:  http://localhost:${PORT}/api/health`);
-});
+store
+  .ensureSeeded()
+  .then(() => {
+    server.listen(PORT, "0.0.0.0", () => {
+      console.log(`WEARTEE API listening on http://localhost:${PORT}`);
+      console.log(`Shop:    http://localhost:${PORT}/`);
+      console.log(`Admin:   http://localhost:${PORT}/admin.html`);
+      console.log(`Health:  http://localhost:${PORT}/api/health`);
+    });
+  })
+  .catch((err) => {
+    console.error("Startup failed:", err.message);
+    process.exit(1);
+  });

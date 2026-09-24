@@ -138,16 +138,28 @@ async function notifyOrder(order, opts = {}) {
     return { sent: false, error: "Order has no customer email", mail };
   }
 
-  const out = saveOutbox(mail);
+  let outboxFile = null;
+  try {
+    outboxFile = path.basename(saveOutbox(mail).file);
+  } catch (err) {
+    console.warn("Outbox write failed:", err.message);
+  }
+
   let provider = null;
   if (process.env.RESEND_API_KEY) {
     provider = await sendViaResend(mail);
+    if (!provider.ok)
+      console.warn(
+        "Resend failed:",
+        provider.status,
+        provider.body || provider.error,
+      );
   }
 
   return {
-    sent: !!(provider && provider.ok) || !process.env.RESEND_API_KEY,
+    sent: !!(provider && provider.ok),
     mode: provider ? (provider.ok ? "resend" : "outbox-fallback") : "outbox",
-    outboxFile: path.basename(out.file),
+    outboxFile,
     provider,
     mail: { to: mail.to, subject: mail.subject, status: mail.status },
   };
