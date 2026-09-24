@@ -34,9 +34,10 @@ const Cart = {
         qty: i.qty,
       })),
     };
-    window.WearteeAPI
-      .api("/api/cart", { method: "PUT", body: JSON.stringify(payload) })
-      .catch((err) => console.warn("Cart sync failed", err));
+    window.WearteeAPI.api("/api/cart", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }).catch((err) => console.warn("Cart sync failed", err));
   },
   async pullFromServer() {
     if (!window.WearteeAPI) return Cart.all();
@@ -357,7 +358,7 @@ function renderChrome() {
           ${ICONS.search}
           <input type="search" name="search" placeholder="Search styles..." aria-label="Search products">
         </form>
-        <button class="icon-btn search-toggle" id="searchToggle" aria-label="Search" style="display:none">${ICONS.search}</button>
+        <button class="icon-btn search-toggle" id="searchToggle" aria-label="Search">${ICONS.search}</button>
         <a class="icon-btn" href="cart.html" aria-label="Cart">${ICONS.cart}<span class="cart-count" style="display:none">0</span></a>
         <a class="icon-btn" href="account.html" aria-label="Account">${ICONS.user}</a>
       </div>
