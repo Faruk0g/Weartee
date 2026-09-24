@@ -22,6 +22,41 @@ function isAdmin(req) {
   return given.length === real.length && crypto.timingSafeEqual(given, real);
 }
 
+function sameEmail(a, b) {
+  const x = String(a || "")
+    .trim()
+    .toLowerCase();
+  const y = String(b || "")
+    .trim()
+    .toLowerCase();
+  return !!x && x === y;
+}
+
+// Basic per-IP limit on order lookups (30 per 10 minutes)
+const lookupHits = new Map();
+function rateLimited(req, limit = 30, windowMs = 10 * 60 * 1000) {
+  const ip = String(
+    req.headers["x-forwarded-for"] || req.socket.remoteAddress || "",
+  )
+    .split(",")[0]
+    .trim();
+  const now = Date.now();
+  const rec = lookupHits.get(ip);
+  if (!rec || now > rec.reset) {
+    lookupHits.set(ip, { count: 1, reset: now + windowMs });
+    return false;
+  }
+  rec.count++;
+  return rec.count > limit;
+}
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [k, v] of lookupHits) if (now > v.reset) lookupHits.delete(k);
+  },
+  10 * 60 * 1000,
+).unref();
+
 function httpError(status, message) {
   const err = new Error(message);
   err.status = status;
@@ -406,16 +441,48 @@ async function handle(req, res) {
 
     if (method === "GET" && path === "/api/orders") {
       const user = await authUser(req);
-      const email = String(url.searchParams.get("email") || user?.email || "")
-        .trim()
-        .toLowerCase();
-      if (!user && !email)
-        return send(res, 400, { error: "Email or sign-in required" });
+      if (!user) return send(res, 401, { error: "Sign in required" });
       const orders = await store.listOrdersFor({
-        email,
-        userId: user ? user.id : null,
+        email: user.email,
+        userId: user.id,
       });
       return send(res, 200, { orders });
+    }
+
+    if (method === "POST" && path === "/api/orders/lookup") {
+      if (rateLimited(req)) {
+        return send(res, 429, {
+          error: "Too many requests, try again later",
+        });
+      }
+      const body = await readBody(req);
+      const refs = Array.isArray(body.orders) ? body.orders.slice(0, 50) : [];
+      const results = await Promise.all(
+        refs.map(async (ref) => {
+          const order = await store.getOrder(String((ref && ref.id) || ""));
+          return order && sameEmail(order.shipping.email, ref.email)
+            ? order
+            : null;
+        }),
+      );
+      return send(res, 200, { orders: results.filter(Boolean) });
+    }
+
+    if (method === "GET" && path.startsWith("/api/orders/")) {
+      if (rateLimited(req)) {
+        return send(res, 429, {
+          error: "Too many requests, try again later",
+        });
+      }
+      const id = decodeURIComponent(path.slice("/api/orders/".length));
+      const order = await store.getOrder(id);
+      const user = await authUser(req);
+      const allowed =
+        order &&
+        ((user && order.userId === user.id) ||
+          sameEmail(order.shipping.email, url.searchParams.get("email")));
+      if (!allowed) return send(res, 404, { error: "Order not found" });
+      return send(res, 200, { order });
     }
 
     if (method === "GET" && path.startsWith("/api/orders/")) {
