@@ -1,11 +1,12 @@
 const STATUS_FLOW = ["Confirmed", "Shipped", "Out for Delivery", "Delivered"];
 
 const state = {
-  apiBase: localStorage.getItem("wt_admin_api") || (
-    location.protocol.startsWith("http")
-      ? (location.port === "5050" ? location.origin : "http://localhost:5050")
-      : "http://localhost:5050"
-  ),
+  apiBase:
+    localStorage.getItem("wt_admin_api") ||
+    (location.protocol.startsWith("http") &&
+    !["localhost", "127.0.0.1"].includes(location.hostname)
+      ? location.origin
+      : "http://localhost:5050"),
   key: sessionStorage.getItem("wt_admin_key") || "",
   orders: [],
   products: [],
@@ -96,7 +97,8 @@ function filteredOrders() {
 function renderOrdersTable() {
   const list = filteredOrders();
   if (!list.length) {
-    $("ordersTableWrap").innerHTML = `<div class="empty">No orders match your filters.</div>`;
+    $("ordersTableWrap").innerHTML =
+      `<div class="empty">No orders match your filters.</div>`;
     return;
   }
   $("ordersTableWrap").innerHTML = `
@@ -126,9 +128,11 @@ function renderOrdersTable() {
           .join("")}
       </tbody>
     </table>`;
-  $("ordersTableWrap").querySelectorAll("tr[data-id]").forEach((row) => {
-    row.addEventListener("click", () => openOrder(row.dataset.id));
-  });
+  $("ordersTableWrap")
+    .querySelectorAll("tr[data-id]")
+    .forEach((row) => {
+      row.addEventListener("click", () => openOrder(row.dataset.id));
+    });
 }
 
 async function loadOrders() {
@@ -139,7 +143,9 @@ async function loadOrders() {
   $("statusFilter").innerHTML =
     `<option value="">All statuses</option>` +
     flow.map((s) => `<option value="${s}">${s}</option>`).join("");
-  $("detailStatus").innerHTML = flow.map((s) => `<option value="${s}">${s}</option>`).join("");
+  $("detailStatus").innerHTML = flow
+    .map((s) => `<option value="${s}">${s}</option>`)
+    .join("");
   renderStats();
   renderOrdersTable();
 }
@@ -183,31 +189,35 @@ function renderDetailItems() {
     })
     .join("");
 
-  $("detailItems").querySelectorAll("input").forEach((input) => {
-    input.addEventListener("change", () => {
-      const row = input.closest(".item-row");
-      const idx = Number(row.dataset.idx);
-      const field = input.dataset.field;
-      let val = Number(input.value);
-      if (field === "qty") val = Math.max(1, Math.min(99, val || 1));
-      if (field === "price") val = Math.max(0, val || 0);
-      state.current.items[idx][field] = val;
-      input.value = val;
-      renderDetailTotals();
+  $("detailItems")
+    .querySelectorAll("input")
+    .forEach((input) => {
+      input.addEventListener("change", () => {
+        const row = input.closest(".item-row");
+        const idx = Number(row.dataset.idx);
+        const field = input.dataset.field;
+        let val = Number(input.value);
+        if (field === "qty") val = Math.max(1, Math.min(99, val || 1));
+        if (field === "price") val = Math.max(0, val || 0);
+        state.current.items[idx][field] = val;
+        input.value = val;
+        renderDetailTotals();
+      });
     });
-  });
-  $("detailItems").querySelectorAll("[data-remove]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const idx = Number(btn.dataset.remove);
-      if (state.current.items.length <= 1) {
-        toast("Keep at least one item");
-        return;
-      }
-      state.current.items.splice(idx, 1);
-      renderDetailItems();
-      renderDetailTotals();
+  $("detailItems")
+    .querySelectorAll("[data-remove]")
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = Number(btn.dataset.remove);
+        if (state.current.items.length <= 1) {
+          toast("Keep at least one item");
+          return;
+        }
+        state.current.items.splice(idx, 1);
+        renderDetailItems();
+        renderDetailTotals();
+      });
     });
-  });
 }
 
 function renderDetailTotals() {
@@ -231,10 +241,13 @@ async function saveItems() {
       items: state.current.items,
       shippingFee: Number($("detailShipping").value || 0),
     };
-    const res = await adminApi(`/api/admin/orders/${encodeURIComponent(state.current.id)}`, {
-      method: "PATCH",
-      body: JSON.stringify(body),
-    });
+    const res = await adminApi(
+      `/api/admin/orders/${encodeURIComponent(state.current.id)}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      },
+    );
     upsertOrder(res.order);
     state.current = JSON.parse(JSON.stringify(res.order));
     $("detailShipping").value = res.order.shippingFee ?? 0;
@@ -260,10 +273,13 @@ async function saveStatus(sendEmail) {
       sendEmail: !!sendEmail,
       emailMessage: $("emailMessage").value.trim(),
     };
-    const res = await adminApi(`/api/admin/orders/${encodeURIComponent(state.current.id)}`, {
-      method: "PATCH",
-      body: JSON.stringify(body),
-    });
+    const res = await adminApi(
+      `/api/admin/orders/${encodeURIComponent(state.current.id)}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      },
+    );
     upsertOrder(res.order);
     state.current = JSON.parse(JSON.stringify(res.order));
     if (sendEmail) {
@@ -300,7 +316,9 @@ async function loadProducts() {
 
 function renderProducts() {
   const q = ($("productSearch").value || "").trim().toLowerCase();
-  const list = state.products.filter((p) => !q || p.name.toLowerCase().includes(q) || p.category.includes(q));
+  const list = state.products.filter(
+    (p) => !q || p.name.toLowerCase().includes(q) || p.category.includes(q),
+  );
   if (!list.length) {
     $("productsGrid").innerHTML = `<div class="empty">No products found.</div>`;
     return;
@@ -319,27 +337,32 @@ function renderProducts() {
     })
     .join("");
 
-  $("productsGrid").querySelectorAll("[data-save]").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const row = btn.closest(".prod-row");
-      const id = row.dataset.id;
-      const price = Number(row.querySelector("[data-price]").value || 0);
-      btn.disabled = true;
-      try {
-        const res = await adminApi(`/api/admin/products/${encodeURIComponent(id)}`, {
-          method: "PATCH",
-          body: JSON.stringify({ price }),
-        });
-        const idx = state.products.findIndex((p) => p.id === id);
-        if (idx >= 0) state.products[idx] = res.product;
-        toast("Price updated");
-      } catch (err) {
-        toast(err.message || "Update failed");
-      } finally {
-        btn.disabled = false;
-      }
+  $("productsGrid")
+    .querySelectorAll("[data-save]")
+    .forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const row = btn.closest(".prod-row");
+        const id = row.dataset.id;
+        const price = Number(row.querySelector("[data-price]").value || 0);
+        btn.disabled = true;
+        try {
+          const res = await adminApi(
+            `/api/admin/products/${encodeURIComponent(id)}`,
+            {
+              method: "PATCH",
+              body: JSON.stringify({ price }),
+            },
+          );
+          const idx = state.products.findIndex((p) => p.id === id);
+          if (idx >= 0) state.products[idx] = res.product;
+          toast("Price updated");
+        } catch (err) {
+          toast(err.message || "Update failed");
+        } finally {
+          btn.disabled = false;
+        }
+      });
     });
-  });
 }
 
 async function tryLogin() {
@@ -390,7 +413,9 @@ function wire() {
     });
   });
 
-  $("refreshOrders").addEventListener("click", () => loadOrders().catch((e) => toast(e.message)));
+  $("refreshOrders").addEventListener("click", () =>
+    loadOrders().catch((e) => toast(e.message)),
+  );
   $("orderSearch").addEventListener("input", renderOrdersTable);
   $("statusFilter").addEventListener("change", renderOrdersTable);
   $("backToOrders").addEventListener("click", () => showView("orders"));
@@ -398,7 +423,9 @@ function wire() {
   $("saveStatusBtn").addEventListener("click", () => saveStatus(false));
   $("emailCustomerBtn").addEventListener("click", () => saveStatus(true));
   $("detailShipping").addEventListener("input", renderDetailTotals);
-  $("refreshProducts").addEventListener("click", () => loadProducts().catch((e) => toast(e.message)));
+  $("refreshProducts").addEventListener("click", () =>
+    loadProducts().catch((e) => toast(e.message)),
+  );
   $("productSearch").addEventListener("input", renderProducts);
 
   if (state.key) {
