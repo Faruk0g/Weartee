@@ -1,120 +1,335 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WEARTEE — Wear Your Story</title>
-  <meta name="description" content="Feminine pieces that tell your story — curated two-piece sets, dresses, tops, skirts and more.">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23B76E79'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='%23F4EBE4' font-family='Georgia' font-weight='bold'>W</text></svg>">
-</head>
-<body data-page="home">
-
-  <main>
-    <section class="hero">
-      <div class="container hero-inner">
-        <div>
-          <span class="hero-eyebrow">New Season Edit</span>
-          <h1>Wear Your <em>Story</em></h1>
-          <p>Curated feminine pieces — flowing dresses, matching sets and effortless tops designed to make every day feel a little more romantic.</p>
-          <div class="hero-cta">
-            <a href="shop.html" class="btn btn-primary">Shop Now
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </a>
-            <a href="shop.html?category=sets" class="btn btn-secondary">Explore Sets</a>
-          </div>
-          <div class="hero-stats">
-            <div class="hero-stat"><b>34+</b><span>Styles</span></div>
-            <div class="hero-stat"><b>1k+</b><span>Happy Customers</span></div>
-            <div class="hero-stat"><b>4.5★</b><span>Average Rating</span></div>
-          </div>
-        </div>
-        <div class="hero-collage" id="heroCollage">
-          <div class="hero-photo hero-photo-1"><img id="heroImg1" alt="Featured WEARTEE style" data-guard></div>
-          <div class="hero-photo hero-photo-2"><img id="heroImg2" alt="Featured WEARTEE style" data-guard></div>
-          <div class="hero-photo hero-photo-3">Effortless<br>Elegance</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="section-head">
-          <h2>Shop by Category</h2>
-        </div>
-        <div class="cat-strip" id="catStrip"></div>
-      </div>
-    </section>
-
-    <section class="section" style="padding-top: 0;">
-      <div class="container">
-        <div class="section-head">
-          <h2>Best Sellers</h2>
-          <a class="see-all" href="shop.html?sort=rating">See All</a>
-        </div>
-        <div class="carousel-wrap">
-          <button class="car-btn prev" data-car="bestCarousel" aria-label="Scroll left">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
-          <div class="carousel" id="bestCarousel"></div>
-          <button class="car-btn next" data-car="bestCarousel" aria-label="Scroll right">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" style="padding-top: 0;">
-      <div class="container">
-        <div class="section-head">
-          <h2>New Arrivals</h2>
-          <a class="see-all" href="shop.html?sort=newest">See All</a>
-        </div>
-        <div class="carousel-wrap">
-          <button class="car-btn prev" data-car="newCarousel" aria-label="Scroll left">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
-          <div class="carousel" id="newCarousel"></div>
-          <button class="car-btn next" data-car="newCarousel" aria-label="Scroll right">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="od-card" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; text-align:center; background:linear-gradient(120deg,var(--pink-50),var(--white));">
-          <div style="padding:10px;">
-            <div class="cat-ico" style="margin:0 auto 10px; width:48px;height:48px;border-radius:50%;background:var(--white);color:var(--pink-600);display:flex;align-items:center;justify-content:center;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WEARTEE — Wear Your Story</title>
+    <meta
+      name="description"
+      content="Feminine pieces that tell your story — curated two-piece sets, dresses, tops, skirts and more."
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23B76E79'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='%23F4EBE4' font-family='Georgia' font-weight='bold'>W</text></svg>"
+    />
+  </head>
+  <body data-page="home">
+    <main>
+      <section class="hero">
+        <div class="container hero-inner">
+          <div>
+            <span class="hero-eyebrow">New Season Edit</span>
+            <h1>Wear Your <em>Story</em></h1>
+            <p>
+              Curated feminine pieces — flowing dresses, matching sets and
+              effortless tops designed to make every day feel a little more
+              romantic.
+            </p>
+            <div class="hero-cta">
+              <a href="shop.html" class="btn btn-primary"
+                >Shop Now
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </a>
+              <a href="shop.html?category=sets" class="btn btn-secondary"
+                >Explore Sets</a
+              >
             </div>
-            <b style="font-family:var(--font-head);color:var(--brown-900);font-size:1.05rem;">Secure Payment</b>
-            <p style="font-size:0.87rem;color:var(--muted);">Card, transfer or pay on delivery</p>
-          </div>
-          <div style="padding:10px;">
-            <div class="cat-ico" style="margin:0 auto 10px; width:48px;height:48px;border-radius:50%;background:var(--white);color:var(--pink-600);display:flex;align-items:center;justify-content:center;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18H3c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1h10c.6 0 1 .4 1 1v11"/><path d="M14 9h4l4 4v4c0 .6-.4 1-1 1h-2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+            <div class="hero-stats">
+              <div class="hero-stat"><b>34+</b><span>Styles</span></div>
+              <div class="hero-stat">
+                <b>1k+</b><span>Happy Customers</span>
+              </div>
+              <div class="hero-stat">
+                <b>4.5★</b><span>Average Rating</span>
+              </div>
             </div>
-            <b style="font-family:var(--font-head);color:var(--brown-900);font-size:1.05rem;">Fast Delivery</b>
-            <p style="font-size:0.87rem;color:var(--muted);">Nationwide shipping across Nigeria</p>
           </div>
-          <div style="padding:10px;">
-            <div class="cat-ico" style="margin:0 auto 10px; width:48px;height:48px;border-radius:50%;background:var(--white);color:var(--pink-600);display:flex;align-items:center;justify-content:center;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="m9 13 2.2 2.2L16 10"/></svg>
+          <div class="hero-collage" id="heroCollage">
+            <div class="hero-photo hero-photo-1">
+              <img id="heroImg1" alt="Featured WEARTEE style" data-guard />
             </div>
-            <b style="font-family:var(--font-head);color:var(--brown-900);font-size:1.05rem;">Easy Returns</b>
-            <p style="font-size:0.87rem;color:var(--muted);">Hassle-free exchange within 7 days</p>
+            <div class="hero-photo hero-photo-2">
+              <img id="heroImg2" alt="Featured WEARTEE style" data-guard />
+            </div>
+            <div class="hero-photo hero-photo-3">Effortless<br />Elegance</div>
           </div>
         </div>
-      </div>
-    </section>
-  </main>
+      </section>
 
-  <script>window.WEARTEE_API = "http://localhost:5050";</script>
-  <script src="js/products.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/home.js"></script>
-</body>
+      <section class="section">
+        <div class="container">
+          <div class="section-head">
+            <h2>Shop by Category</h2>
+          </div>
+          <div class="cat-strip" id="catStrip"></div>
+        </div>
+      </section>
+
+      <section class="section" style="padding-top: 0">
+        <div class="container">
+          <div class="section-head">
+            <h2>Best Sellers</h2>
+            <a class="see-all" href="shop.html?sort=rating">See All</a>
+          </div>
+          <div class="carousel-wrap">
+            <button
+              class="car-btn prev"
+              data-car="bestCarousel"
+              aria-label="Scroll left"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+            <div class="carousel" id="bestCarousel"></div>
+            <button
+              class="car-btn next"
+              data-car="bestCarousel"
+              aria-label="Scroll right"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" style="padding-top: 0">
+        <div class="container">
+          <div class="section-head">
+            <h2>New Arrivals</h2>
+            <a class="see-all" href="shop.html?sort=newest">See All</a>
+          </div>
+          <div class="carousel-wrap">
+            <button
+              class="car-btn prev"
+              data-car="newCarousel"
+              aria-label="Scroll left"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+            <div class="carousel" id="newCarousel"></div>
+            <button
+              class="car-btn next"
+              data-car="newCarousel"
+              aria-label="Scroll right"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div
+            class="od-card"
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr 1fr;
+              gap: 18px;
+              text-align: center;
+              background: linear-gradient(120deg, var(--pink-50), var(--white));
+            "
+          >
+            <div style="padding: 10px">
+              <div
+                class="cat-ico"
+                style="
+                  margin: 0 auto 10px;
+                  width: 48px;
+                  height: 48px;
+                  border-radius: 50%;
+                  background: var(--white);
+                  color: var(--pink-600);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 12V8H6a2 2 0 0 1 0-4h12v4" />
+                  <path d="M4 6v12a2 2 0 0 0 2 2h14v-4" />
+                  <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
+                </svg>
+              </div>
+              <b
+                style="
+                  font-family: var(--font-head);
+                  color: var(--brown-900);
+                  font-size: 1.05rem;
+                "
+                >Secure Payment</b
+              >
+              <p style="font-size: 0.87rem; color: var(--muted)">
+                Card, transfer or pay on delivery
+              </p>
+            </div>
+            <div style="padding: 10px">
+              <div
+                class="cat-ico"
+                style="
+                  margin: 0 auto 10px;
+                  width: 48px;
+                  height: 48px;
+                  border-radius: 50%;
+                  background: var(--white);
+                  color: var(--pink-600);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M5 18H3c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1h10c.6 0 1 .4 1 1v11"
+                  />
+                  <path d="M14 9h4l4 4v4c0 .6-.4 1-1 1h-2" />
+                  <circle cx="7" cy="18" r="2" />
+                  <circle cx="17" cy="18" r="2" />
+                </svg>
+              </div>
+              <b
+                style="
+                  font-family: var(--font-head);
+                  color: var(--brown-900);
+                  font-size: 1.05rem;
+                "
+                >Fast Delivery</b
+              >
+              <p style="font-size: 0.87rem; color: var(--muted)">
+                Nationwide shipping across Nigeria
+              </p>
+            </div>
+            <div style="padding: 10px">
+              <div
+                class="cat-ico"
+                style="
+                  margin: 0 auto 10px;
+                  width: 48px;
+                  height: 48px;
+                  border-radius: 50%;
+                  background: var(--white);
+                  color: var(--pink-600);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M3 12a9 9 0 1 0 9-9" />
+                  <path d="M3 4v5h5" />
+                  <path d="m9 13 2.2 2.2L16 10" />
+                </svg>
+              </div>
+              <b
+                style="
+                  font-family: var(--font-head);
+                  color: var(--brown-900);
+                  font-size: 1.05rem;
+                "
+                >Easy Returns</b
+              >
+              <p style="font-size: 0.87rem; color: var(--muted)">
+                Hassle-free exchange within 7 days
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      window.WEARTEE_API = ["localhost", "127.0.0.1"].includes(
+        location.hostname,
+      )
+        ? "http://localhost:5050"
+        : location.origin;
+    </script>
+    <script src="js/products.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/home.js"></script>
+  </body>
 </html>

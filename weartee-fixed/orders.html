@@ -1,67 +1,126 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Orders — WEARTEE</title>
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23B76E79'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='%23F4EBE4' font-family='Georgia' font-weight='bold'>W</text></svg>">
-</head>
-<body data-page="orders">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Orders — WEARTEE</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23B76E79'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='%23F4EBE4' font-family='Georgia' font-weight='bold'>W</text></svg>"
+    />
+  </head>
+  <body data-page="orders">
+    <main class="container">
+      <nav class="crumbs">
+        <a href="index.html">Home</a><span class="sep">/</span>
+        <a href="account.html">Account</a><span class="sep">/</span
+        ><span class="here">Orders</span>
+      </nav>
+      <div style="padding: 14px 0 0">
+        <h1 class="page-title">My Orders</h1>
+        <p class="page-sub">Track and revisit everything you've ordered.</p>
+      </div>
 
-  <main class="container">
-    <nav class="crumbs">
-      <a href="index.html">Home</a><span class="sep">/</span>
-      <a href="account.html">Account</a><span class="sep">/</span><span class="here">Orders</span>
-    </nav>
-    <div style="padding: 14px 0 0;">
-      <h1 class="page-title">My Orders</h1>
-      <p class="page-sub">Track and revisit everything you've ordered.</p>
-    </div>
+      <div class="account-layout">
+        <aside class="account-side">
+          <div class="account-user">
+            <div class="avatar" id="userAvatar">J</div>
+            <div>
+              <b id="userName">Jane Doe</b>
+              <span id="userEmail">jane@example.com</span>
+            </div>
+          </div>
+          <nav class="account-nav">
+            <a href="account.html">
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Account Info
+            </a>
+            <a href="orders.html" class="active">
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 8V21H3V8" />
+                <path d="M1 3h22v5H1z" />
+                <path d="M10 12h4" />
+              </svg>
+              My Orders
+            </a>
+            <a href="account.html#addresses">
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              Addresses
+            </a>
+            <button id="logoutBtn">
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <path d="m16 17 5-5-5-5" />
+                <path d="M21 12H9" />
+              </svg>
+              Logout
+            </button>
+          </nav>
+        </aside>
 
-    <div class="account-layout">
-      <aside class="account-side">
-        <div class="account-user">
-          <div class="avatar" id="userAvatar">J</div>
-          <div>
-            <b id="userName">Jane Doe</b>
-            <span id="userEmail">jane@example.com</span>
+        <div>
+          <div class="orders-card">
+            <h2>Order History</h2>
+            <p class="orders-sub" id="ordersSub"></p>
+            <div id="ordersContent"></div>
           </div>
         </div>
-        <nav class="account-nav">
-          <a href="account.html">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Account Info
-          </a>
-          <a href="orders.html" class="active">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V21H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
-            My Orders
-          </a>
-          <a href="account.html#addresses">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            Addresses
-          </a>
-          <button id="logoutBtn">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
-            Logout
-          </button>
-        </nav>
-      </aside>
-
-      <div>
-        <div class="orders-card">
-          <h2>Order History</h2>
-          <p class="orders-sub" id="ordersSub"></p>
-          <div id="ordersContent"></div>
-        </div>
       </div>
-    </div>
-  </main>
+    </main>
 
-  <script>window.WEARTEE_API = "http://localhost:5050";</script>
-  <script src="js/products.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/orders.js"></script>
-</body>
+    <script>
+      window.WEARTEE_API = ["localhost", "127.0.0.1"].includes(
+        location.hostname,
+      )
+        ? "http://localhost:5050"
+        : location.origin;
+    </script>
+    <script src="js/products.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/orders.js"></script>
+  </body>
 </html>

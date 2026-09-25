@@ -178,7 +178,13 @@
       </div>
     </main>
 
-    <script>window.WEARTEE_API = "http://localhost:5050";</script>
+    <script>
+      window.WEARTEE_API = ["localhost", "127.0.0.1"].includes(
+        location.hostname,
+      )
+        ? "http://localhost:5050"
+        : location.origin;
+    </script>
     <script src="js/products.js"></script>
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>

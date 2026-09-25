@@ -1,7 +1,11 @@
 /* WEARTEE API client. Load before main.js.
-   window.WEARTEE_API = "http://localhost:5050";
+   window.WEARTEE_API = ["localhost", "127.0.0.1"].includes(location.hostname) ? "http://localhost:5050" : location.origin;
 */
-const API_BASE = (window.WEARTEE_API || localStorage.getItem("wt_api") || "http://localhost:5050").replace(/\/$/, "");
+const API_BASE = (
+  window.WEARTEE_API ||
+  localStorage.getItem("wt_api") ||
+  "http://localhost:5050"
+).replace(/\/$/, "");
 
 const Auth = {
   token() {
@@ -17,7 +21,8 @@ const CartId = {
   get() {
     let id = localStorage.getItem("wt_cart_id") || "";
     if (!id) {
-      id = (crypto.randomUUID && crypto.randomUUID().replace(/-/g, "")) ||
+      id =
+        (crypto.randomUUID && crypto.randomUUID().replace(/-/g, "")) ||
         String(Date.now()) + Math.random().toString(16).slice(2);
       localStorage.setItem("wt_cart_id", id);
     }
@@ -29,10 +34,16 @@ const CartId = {
 };
 
 async function api(path, options = {}) {
-  const headers = Object.assign({ "Content-Type": "application/json" }, options.headers || {});
+  const headers = Object.assign(
+    { "Content-Type": "application/json" },
+    options.headers || {},
+  );
   if (Auth.token()) headers.Authorization = "Bearer " + Auth.token();
   headers["x-cart-id"] = CartId.get();
-  const res = await fetch(API_BASE + path, Object.assign({}, options, { headers }));
+  const res = await fetch(
+    API_BASE + path,
+    Object.assign({}, options, { headers }),
+  );
   let body = null;
   try {
     body = await res.json();
@@ -40,7 +51,9 @@ async function api(path, options = {}) {
     body = null;
   }
   if (!res.ok) {
-    const err = new Error((body && body.error) || res.statusText || "Request failed");
+    const err = new Error(
+      (body && body.error) || res.statusText || "Request failed",
+    );
     err.status = res.status;
     err.body = body;
     throw err;
