@@ -274,6 +274,9 @@ h3,
 .navbar {
   position: sticky;
   top: 0;
+  transform: translateZ(
+    0
+  ); /* forces its own compositing layer, reduces jitter */
   z-index: 90;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
@@ -2101,6 +2104,10 @@ h3,
 .bottom-nav ul {
   display: flex;
   height: 100%;
+}
+.bottom-nav li {
+  flex: 1;
+  display: flex; /* so the <a> inside can fill it too */
 }
 .bottom-nav a {
   flex: 1;
