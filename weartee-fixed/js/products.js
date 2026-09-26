@@ -265,8 +265,7 @@ const products = [
   },
   {
     id: "5e7c8bed-4d7a-4f2c-9b5e-8a1d4f7c2b3d",
-    image:
-      "weartee-images/Stripped Long Sleeve off Shoulder Basic 2 piece set.jpeg",
+    image: "weartee-images/Stripped Long Sleeve off Shoulder Basic 2 piece set.jpeg",
     name: "Stripped Long Sleeve Off Shoulder Basic 2 Piece Set",
     rating: { star: 4.5, count: 112 },
     price: 25000,
@@ -314,7 +313,7 @@ const products = [
   },
   {
     id: "092d36f8-9e2b-4a7d-8c0f-3b6e9a2d7ce8",
-    image: "weartee-images/Love Neck Shaped Top.jpeg",
+    image: "weartee-images/Love neck shaped top.jpeg",
     name: "Love Neck Shaped Top",
     rating: { star: 4.6, count: 61 },
     price: 9000,
@@ -322,7 +321,7 @@ const products = [
   },
   {
     id: "1a3e47a9-0f3c-4b8e-9d1a-4c7f0b3e8df9",
-    image: "weartee-images/Long Sleeve Basic Top - Blue.jpeg",
+    image: "weartee-images/Long sleeve basic top - blue.jpeg",
     name: "Long Sleeve Basic Top - Blue",
     rating: { star: 4.4, count: 33 },
     price: 10000,
@@ -330,18 +329,37 @@ const products = [
   },
   {
     id: "2b4f58ba-1a4d-4c9f-8e2b-5d8a1c4f9e0a",
-    image: "weartee-images/Long Sleeve Basic Top - Onion Color.jpeg",
+    image: "weartee-images/Long sleeve basic top - onion color.jpeg",
     name: "Long Sleeve Basic Top - Onion",
     rating: { star: 4.3, count: 25 },
     price: 10000,
     category: "tops",
   },
   {
+    // CONFIRM: which pink file is this, and is it a separate SKU or a dupe of the one below?
     id: "3c5a69cb-2b5e-4d0a-9f3c-6e9b2d5a0f1b",
     image: "weartee-images/Long sleeve basic top-pink.jpeg",
     name: "Long Sleeve Basic Top - Pink",
     rating: { star: 4.5, count: 42 },
     price: 10000,
+    category: "tops",
+  },
+  {
+    // CONFIRM: second pink file — delete this block if it's a duplicate you don't need live
+    id: "6f8b7ac1-3e6d-4b9f-8a2c-7d4e8b1f6a5d",
+    image: "weartee-images/Long sleeve basic top-pink (2).jpeg",
+    name: "Long Sleeve Basic Top - Pink (V2)",
+    rating: { star: 4.5, count: 20 },
+    price: 10000,
+    category: "tops",
+  },
+  {
+    // CONFIRM: price — this "Abunai Brand Club" top wasn't in your priced list, guessed at 15000
+    id: "9c1d8ba2-4f7e-4c0a-9b3d-8e5f9c2a7b6e",
+    image: "weartee-images/Long sleeve round neck top.jpeg",
+    name: "Long Sleeve Round Neck Top",
+    rating: { star: 4.4, count: 30 },
+    price: 15000,
     category: "tops",
   },
 ];
@@ -354,7 +372,6 @@ const products = [
  * ------------------------------------------------------------------ */
 const DEFAULT_SIZES = ["S", "M", "L", "XL"];
 const COLOR_OVERRIDES = {
-  // denim / corduroy / plaid items get sensible defaults; adjust freely
   "f6d9b3a7-8e1f-4c4d-8b6a-0d7c0f3b8e96": ["brown"], // Corduroy Wide Leg Pants
   "07eac4b8-9f2a-4d5e-9c7b-1e8d1a4c9fa7": ["blue"], // Denim Laced Side Capri Pants
 };
@@ -387,10 +404,9 @@ const COLOR_SWATCHES = {
   multi: "linear-gradient(135deg,#E5A4B3 0%,#7A5443 100%)",
 };
 
-const SHIPPING_FEE = 3500; // fallback when state unknown
+const SHIPPING_FEE = 3500;
 const FREE_SHIPPING_THRESHOLD = 50000;
 
-/** Delivery fee by Nigerian state (₦). Admin/backend can override via /api/meta */
 const SHIPPING_BY_STATE = {
   Lagos: 2500,
   Ogun: 3000,
