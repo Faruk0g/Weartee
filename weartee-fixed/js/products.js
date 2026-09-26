@@ -28,7 +28,7 @@ const products = [
     image: "weartee-images/Cambodian Stretchy Maxi Skirt.jpeg",
     name: "Cambodian Stretchy Maxi Skirt",
     rating: { star: 4.4, count: 58 },
-    price: 16000,
+    price: 14000,
     category: "skirts",
   },
   {
@@ -60,7 +60,7 @@ const products = [
     image: "weartee-images/Fake Two Piece Lace Bottom Top.jpeg",
     name: "Fake Two Piece Lace Bottom Top",
     rating: { star: 4.6, count: 73 },
-    price: 12000,
+    price: 13000,
     category: "tops",
   },
   {
@@ -68,7 +68,7 @@ const products = [
     image: "weartee-images/Long Sleeve Bow Top.jpeg",
     name: "Long Sleeve Bow Top",
     rating: { star: 4.4, count: 51 },
-    price: 15000,
+    price: 13000,
     category: "tops",
   },
   {
@@ -76,7 +76,7 @@ const products = [
     image: "weartee-images/Long sleeve button down shirt drawstring back.jpeg",
     name: "Long Sleeve Button Down Shirt Drawstring Back",
     rating: { star: 4.5, count: 64 },
-    price: 23000,
+    price: 15000,
     category: "tops",
   },
   {
@@ -84,7 +84,7 @@ const products = [
     image: "weartee-images/Long Sleeve Lace Corset Top.jpeg",
     name: "Long Sleeve Lace Corset Top",
     rating: { star: 4.3, count: 33 },
-    price: 17000,
+    price: 15000,
     category: "tops",
   },
   {
@@ -92,7 +92,7 @@ const products = [
     image: "weartee-images/Long Sleeve Mesh Maxi Dress.jpeg",
     name: "Long Sleeve Mesh Maxi Dress",
     rating: { star: 4.4, count: 39 },
-    price: 17000,
+    price: 23000,
     category: "dresses",
   },
   {
@@ -108,7 +108,7 @@ const products = [
     image: "weartee-images/Long Sleeved Mesh Maxi Dress.jpeg",
     name: "Long Sleeved Mesh Maxi Dress",
     rating: { star: 4.5, count: 55 },
-    price: 15000,
+    price: 20000,
     category: "dresses",
   },
   {
@@ -116,7 +116,7 @@ const products = [
     image: "weartee-images/Matching 2 Piece Set.jpeg",
     name: "Matching 2 Piece Set",
     rating: { star: 4.7, count: 68 },
-    price: 25000,
+    price: 22000,
     category: "sets",
   },
   {
@@ -124,7 +124,7 @@ const products = [
     image: "weartee-images/Maxi Mesh Skirt.jpeg",
     name: "Maxi Mesh Skirt",
     rating: { star: 4.6, count: 60 },
-    price: 26000,
+    price: 14000,
     category: "skirts",
   },
   {
@@ -140,7 +140,7 @@ const products = [
     image: "weartee-images/Open side Bow Tie design joggers.jpeg",
     name: "Open Side Bow Tie Design Joggers",
     rating: { star: 4.4, count: 41 },
-    price: 25000,
+    price: 15000,
     category: "bottoms",
   },
   {
@@ -164,7 +164,7 @@ const products = [
     image: "weartee-images/Ribbed Multicolored Short Sleeve Top.jpeg",
     name: "Ribbed Multicolored Short Sleeve Top",
     rating: { star: 4.5, count: 49 },
-    price: 16000,
+    price: 12000,
     category: "tops",
   },
   {
@@ -172,7 +172,7 @@ const products = [
     image: "weartee-images/Scrunched waist laced bottom short sleeve Top.jpeg",
     name: "Scrunched Waist Laced Bottom Short Sleeve Top",
     rating: { star: 4.4, count: 31 },
-    price: 23000,
+    price: 15000,
     category: "tops",
   },
   {
@@ -196,7 +196,7 @@ const products = [
     image: "weartee-images/Sleeveless Mesh Dress.jpeg",
     name: "Sleeveless Mesh Dress",
     rating: { star: 4.3, count: 28 },
-    price: 16000,
+    price: 25000,
     category: "dresses",
   },
   {
@@ -220,7 +220,7 @@ const products = [
     image: "weartee-images/Spaghetti Strap Drawstring Waist Midi Dress.jpeg",
     name: "Spaghetti Strap Drawstring Waist Midi Dress",
     rating: { star: 4.4, count: 34 },
-    price: 15000,
+    price: 25000,
     category: "dresses",
   },
   {
