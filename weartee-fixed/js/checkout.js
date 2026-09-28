@@ -43,25 +43,6 @@ function validateStep(step) {
     mark("city", document.getElementById("city").value.trim().length >= 2);
     mark("state", !!document.getElementById("state").value);
   }
-  if (step === 2 && getPaymentMethod() === "Card") {
-    mark(
-      "cardNumber",
-      document.getElementById("cardNumber").value.replace(/\D/g, "").length >=
-        12,
-    );
-    mark(
-      "cardName",
-      document.getElementById("cardName").value.trim().length >= 2,
-    );
-    mark(
-      "cardExpiry",
-      /^\d{2}\s*\/\s*\d{2}$/.test(document.getElementById("cardExpiry").value),
-    );
-    mark(
-      "cardCvc",
-      document.getElementById("cardCvc").value.replace(/\D/g, "").length >= 3,
-    );
-  }
   return ok;
 }
 
@@ -112,44 +93,12 @@ function renderSummary() {
     document.getElementById("reviewShipping").innerHTML =
       `${f("fullName")}<br>${f("address")}, ${f("city")} — ${document.getElementById("state").value}<br>${f("phone")} · ${f("email")}`;
     document.getElementById("reviewPayment").textContent =
-      getPaymentMethod() === "Card"
-        ? `Card ending in ${document.getElementById("cardNumber").value.replace(/\D/g, "").slice(-4) || "****"}`
-        : getPaymentMethod();
+      getPaymentMethod() === "Card" ? "Card (via Paystack)" : getPaymentMethod();
   }
   guardImages(document);
 }
 
-async function placeOrder() {
-  const items = Cart.linesForCheckout();
-  if (!items.length) return;
-  const buyNow = Cart.isBuyNow() && Cart.pendingCheckout();
-  const btn = document.getElementById("placeOrderBtn");
-  const btnLabel = btn ? btn.textContent : "";
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = "Placing order…";
-  }
-
-  const f = (id) => document.getElementById(id).value.trim();
-  const payload = {
-    items: items.map((i) => ({
-      id: i.id,
-      size: i.size,
-      color: i.color,
-      qty: i.qty,
-    })),
-    shipping: {
-      name: f("fullName"),
-      email: f("email"),
-      phone: f("phone"),
-      address: f("address"),
-      city: f("city"),
-      state: document.getElementById("state").value,
-      note: f("note"),
-    },
-    payment: getPaymentMethod(),
-  };
-
+async function submitOrder(payload, btn, btnLabel) {
   let order = null;
   try {
     if (!window.WearteeAPI)
@@ -187,9 +136,80 @@ async function placeOrder() {
   profile.state = order.shipping.state;
   Profile.save(profile);
 
+  const buyNow = Cart.isBuyNow() && Cart.pendingCheckout();
   if (buyNow) Cart.clearPendingCheckout();
   else Cart.clear();
   window.location.href = `order-details.html?id=${order.id}&placed=1`;
+}
+
+async function placeOrder() {
+  const items = Cart.linesForCheckout();
+  if (!items.length) return;
+  const btn = document.getElementById("placeOrderBtn");
+  const btnLabel = btn ? btn.textContent : "";
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Placing order…";
+  }
+
+  const f = (id) => document.getElementById(id).value.trim();
+  const payload = {
+    items: items.map((i) => ({
+      id: i.id,
+      size: i.size,
+      color: i.color,
+      qty: i.qty,
+    })),
+    shipping: {
+      name: f("fullName"),
+      email: f("email"),
+      phone: f("phone"),
+      address: f("address"),
+      city: f("city"),
+      state: document.getElementById("state").value,
+      note: f("note"),
+    },
+    payment: getPaymentMethod(),
+  };
+
+  if (payload.payment !== "Card") {
+    return submitOrder(payload, btn, btnLabel);
+  }
+
+  if (!window.PaystackPop || !window.WEARTEE_PAYSTACK_PUBLIC_KEY) {
+    toast("Card payment isn't set up yet — please choose another method.");
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = btnLabel;
+    }
+    return;
+  }
+
+  const subtotal = Cart.lineSubtotal(items);
+  const shipping = Cart.lineShipping(items, payload.shipping.state);
+  const totalNaira = subtotal + shipping;
+  const reference =
+    "wt_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+
+  const handler = PaystackPop.setup({
+    key: window.WEARTEE_PAYSTACK_PUBLIC_KEY,
+    email: payload.shipping.email,
+    amount: Math.round(totalNaira * 100), // Paystack expects kobo
+    currency: "NGN",
+    ref: reference,
+    callback: function (response) {
+      payload.paystackReference = response.reference;
+      submitOrder(payload, btn, btnLabel);
+    },
+    onClose: function () {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = btnLabel;
+      }
+      toast("Payment window closed — your card was not charged.");
+    },
+  });
+  handler.openIframe();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -205,25 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   if (profile.state) document.getElementById("state").value = profile.state;
 
-  // Card number / expiry formatting
-  const cardNumber = document.getElementById("cardNumber");
-  cardNumber.addEventListener("input", () => {
-    const digits = cardNumber.value.replace(/\D/g, "").slice(0, 19);
-    cardNumber.value = digits.replace(/(.{4})/g, "$1 ").trim();
-  });
-  const cardExpiry = document.getElementById("cardExpiry");
-  cardExpiry.addEventListener("input", () => {
-    let v = cardExpiry.value.replace(/\D/g, "").slice(0, 4);
-    if (v.length > 2) v = v.slice(0, 2) + " / " + v.slice(2);
-    cardExpiry.value = v;
-  });
-  document.getElementById("cardCvc").addEventListener("input", (e) => {
-    e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4);
-  });
-
   document.getElementById("payOptions").addEventListener("change", () => {
-    const isCard = getPaymentMethod() === "Card";
-    document.getElementById("cardFields").style.display = isCard ? "" : "none";
     document.querySelectorAll(".pay-option").forEach((opt) => {
       opt.classList.toggle("active", opt.querySelector("input").checked);
     });
