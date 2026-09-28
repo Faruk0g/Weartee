@@ -239,45 +239,10 @@
               </div>
 
               <div class="card-fields" id="cardFields">
-                <div class="form-grid">
-                  <div class="field full">
-                    <label for="cardNumber">Card Number <span>*</span></label>
-                    <input
-                      id="cardNumber"
-                      type="text"
-                      inputmode="numeric"
-                      placeholder="0000 0000 0000 0000"
-                      maxlength="23"
-                    />
-                    <span class="err">Please enter your card number.</span>
-                  </div>
-                  <div class="field full">
-                    <label for="cardName">Name on Card <span>*</span></label>
-                    <input id="cardName" type="text" placeholder="JANE DOE" />
-                    <span class="err">Please enter the name on your card.</span>
-                  </div>
-                  <div class="field">
-                    <label for="cardExpiry">Expiry <span>*</span></label>
-                    <input
-                      id="cardExpiry"
-                      type="text"
-                      placeholder="MM / YY"
-                      maxlength="7"
-                    />
-                    <span class="err">Please enter the expiry date.</span>
-                  </div>
-                  <div class="field">
-                    <label for="cardCvc">CVC <span>*</span></label>
-                    <input
-                      id="cardCvc"
-                      type="text"
-                      inputmode="numeric"
-                      placeholder="123"
-                      maxlength="4"
-                    />
-                    <span class="err">Please enter the CVC.</span>
-                  </div>
-                </div>
+                <p class="text-muted" style="font-size: 0.9rem">
+                  You'll enter your card details in a secure Paystack window
+                  after you click "Place Order".
+                </p>
               </div>
 
               <div class="panel-nav">
@@ -353,6 +318,11 @@
     <script src="js/products.js"></script>
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script>
+      window.WEARTEE_PAYSTACK_PUBLIC_KEY =
+        "pk_test_7c8eeebd3dcb7acec8acbc397b94f8afbc28da60";
+    </script>
     <script src="js/checkout.js"></script>
   </body>
 </html>
