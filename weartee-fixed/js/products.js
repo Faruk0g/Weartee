@@ -106,9 +106,9 @@ const products = [
   {
     id: "901df3e7-8c1d-4a4b-8f6e-0b7a0d3f8c30",
     image: "weartee-images/Long Sleeved Mesh Maxi Dress.jpeg",
-    name: "Long Sleeved Mesh Maxi Dress",
+    name: "Long Sleeved Maxi Dress",
     rating: { star: 4.5, count: 55 },
-    price: 21000,
+    price: 23000,
     category: "dresses",
   },
   {
@@ -124,7 +124,7 @@ const products = [
     image: "weartee-images/Maxi Mesh Skirt.jpeg",
     name: "Maxi Mesh Skirt",
     rating: { star: 4.6, count: 60 },
-    price: 12000,
+    price: 15000,
     category: "skirts",
   },
   {
@@ -164,7 +164,7 @@ const products = [
     image: "weartee-images/Ribbed Multicolored Short Sleeve Top.jpeg",
     name: "Ribbed Multicolored Short Sleeve Top",
     rating: { star: 4.5, count: 49 },
-    price: 13000,
+    price: 15000,
     category: "tops",
   },
   {
@@ -188,7 +188,7 @@ const products = [
     image: "weartee-images/Sleeveless Maxi Polka Dot Dress.jpeg",
     name: "Sleeveless Maxi Polka Dot Dress",
     rating: { star: 4.6, count: 52 },
-    price: 22000,
+    price: 25000,
     category: "dresses",
   },
   {
