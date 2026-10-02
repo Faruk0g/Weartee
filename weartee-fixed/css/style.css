@@ -267,7 +267,7 @@ h3,
 .mobile-search {
   display: none;
 }
-.search-toggle {
+.icon-btn.search-toggle {
   display: none;
 }
 
