@@ -2464,3 +2464,14 @@ body {
     grid-template-columns: 1fr;
   }
 }
+@media (min-width: 941px) {
+  .nav-actions .search-toggle {
+    display: none !important;
+  }
+}
+
+@media (max-width: 940px) {
+  .nav-actions .search-toggle {
+    display: inline-flex !important;
+  }
+}
