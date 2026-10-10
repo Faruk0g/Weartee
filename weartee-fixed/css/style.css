@@ -267,7 +267,7 @@ h3,
 .mobile-search {
   display: none;
 }
-.icon-btn.search-toggle {
+.search-toggle {
   display: none;
 }
 
@@ -385,6 +385,9 @@ h3,
   transition:
     background 0.2s,
     color 0.2s;
+}
+.nav-actions .search-toggle {
+  display: none;
 }
 .icon-btn:hover {
   background: var(--pink-50);
@@ -2462,16 +2465,5 @@ body {
   }
   .footer-grid {
     grid-template-columns: 1fr;
-  }
-}
-@media (min-width: 941px) {
-  .nav-actions .search-toggle {
-    display: none !important;
-  }
-}
-
-@media (max-width: 940px) {
-  .nav-actions .search-toggle {
-    display: inline-flex !important;
   }
 }
