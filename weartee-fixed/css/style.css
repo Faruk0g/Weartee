@@ -2340,6 +2340,19 @@ body {
 }
 
 @media (max-width: 640px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .navbar,
+  .footer {
+    width: 100%;
+    max-width: 100%;
+  }
+
   body {
     padding-bottom: calc(var(--bottom-nav-h) + 10px);
   }
@@ -2453,9 +2466,26 @@ body {
   }
   .steps {
     justify-content: center;
+    width: 100%;
+    min-width: 0;
+    gap: 0;
+  }
+  .steps .step {
+    flex: 0 0 auto;
   }
   .step-line {
+    flex: 1 1 0;
     min-width: 20px;
+    margin: 0 8px;
+  }
+
+  .checkout-layout,
+  .checkout-layout > *,
+  .checkout-panel,
+  .summary-card {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .checkout-panel,
