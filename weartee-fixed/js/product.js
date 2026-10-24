@@ -34,16 +34,9 @@ function addToCart(buyNow) {
     return;
   }
   if (buyNow) {
-    Cart.setPendingCheckout({
-      id: product.id,
-      name: product.name,
-      image: product.image,
-      price: product.price,
-      category: product.category,
-      size: selectedSize,
-      color: selectedColor,
-      qty,
-    });
+    Cart.setPendingCheckout(
+      Cart.productLine(product, selectedSize, selectedColor, qty),
+    );
     window.location.href = "checkout.html?buynow=1";
     return;
   }
