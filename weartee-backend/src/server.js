@@ -16,8 +16,6 @@ if (IS_PROD && ADMIN_KEY.length < 12) {
   throw new Error("Set ADMIN_KEY (12+ characters) in the environment");
 }
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || "";
-
 function isAdmin(req) {
   const given = Buffer.from(String(req.headers["x-admin-key"] || ""));
   const real = Buffer.from(ADMIN_KEY);
@@ -63,28 +61,6 @@ function httpError(status, message) {
   const err = new Error(message);
   err.status = status;
   return err;
-}
-
-async function verifyPaystackPayment(reference, expectedKobo) {
-  if (!PAYSTACK_SECRET_KEY) {
-    throw httpError(500, "Payment verification is not configured");
-  }
-  const res = await fetch(
-    `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
-    { headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}` } },
-  );
-  const body = await res.json().catch(() => null);
-  if (!res.ok || !body || !body.status || !body.data) {
-    throw httpError(402, "Payment could not be verified");
-  }
-  const tx = body.data;
-  if (tx.status !== "success") {
-    throw httpError(402, "Payment was not successful");
-  }
-  if (tx.currency !== "NGN" || Number(tx.amount) !== expectedKobo) {
-    throw httpError(402, "Payment amount does not match the order total");
-  }
-  return tx;
 }
 
 function publicUser(u) {
@@ -281,6 +257,20 @@ async function handle(req, res) {
       return send(res, 200, { ...meta, statusFlow: STATUS_FLOW });
     }
 
+    if (method === "GET" && path === "/api/payment-info") {
+      return send(res, 200, {
+        bankTransfer: {
+          bankName: process.env.TRANSFER_BANK_NAME || "Moniepoint MFB",
+          accountName:
+            process.env.TRANSFER_ACCOUNT_NAME || "Olowoeyo Fatima Bukola",
+          accountNumber: process.env.TRANSFER_ACCOUNT_NUMBER || "6650194873",
+          proofWhatsApp: process.env.TRANSFER_PROOF_WHATSAPP || "09012473305",
+          proofEmail:
+            process.env.TRANSFER_PROOF_EMAIL || "weartee.ng@gmail.com",
+        },
+      });
+    }
+
     if (method === "GET" && path === "/api/products") {
       let list = await store.listProducts();
       const categories = url.searchParams.getAll("category").filter(Boolean);
@@ -421,18 +411,6 @@ async function handle(req, res) {
       if (packed.error) return send(res, 400, { error: packed.error });
 
       const money = pricing(packed.items, meta, state);
-
-      let paystackRef = null;
-      if (payment === "Card") {
-        const reference = String(body.paystackReference || "").trim();
-        if (!reference) {
-          return send(res, 400, { error: "Missing payment reference" });
-        }
-        const expectedKobo = Math.round(money.total * 100);
-        const tx = await verifyPaystackPayment(reference, expectedKobo);
-        paystackRef = tx.reference;
-      }
-
       const order = {
         id: "",
         date: new Date().toISOString(),
@@ -449,7 +427,12 @@ async function handle(req, res) {
           note: String(shipping.note || "").slice(0, 400),
         },
         payment,
-        paystackReference: paystackRef,
+        paymentStatus:
+          payment === "Bank Transfer"
+            ? "Awaiting Transfer"
+            : payment === "Pay on Delivery"
+              ? "Due on Delivery"
+              : "Pending",
         subtotal: money.subtotal,
         shippingFee: money.shippingFee,
         total: money.total,
@@ -569,6 +552,22 @@ async function handle(req, res) {
           });
         }
         order.status = status;
+      }
+
+      if (body.paymentStatus !== undefined) {
+        const allowedPaymentStatuses =
+          order.payment === "Bank Transfer"
+            ? ["Awaiting Transfer", "Paid"]
+            : order.payment === "Card"
+              ? ["Pending", "Paid"]
+              : ["Due on Delivery", "Paid"];
+        const paymentStatus = String(body.paymentStatus || "");
+        if (!allowedPaymentStatuses.includes(paymentStatus)) {
+          return send(res, 400, {
+            error: `Payment status must be one of: ${allowedPaymentStatuses.join(", ")}`,
+          });
+        }
+        order.paymentStatus = paymentStatus;
       }
 
       if (Array.isArray(body.items)) {
