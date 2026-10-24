@@ -269,3 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   render();
 });
+
+document.addEventListener("products:updated", () => {
+  if (document.getElementById("productGrid")) render();
+});

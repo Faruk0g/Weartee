@@ -61,3 +61,20 @@ You should see:
 Default admin key: `change-me-admin`
 
 Data file: `data/db.json` (auto-created on first start).
+
+# Bank transfer setup
+
+Set these environment variables in the backend deployment to show the bank
+account and proof-of-payment contact on transfer orders:
+
+```env
+TRANSFER_BANK_NAME=
+TRANSFER_ACCOUNT_NAME=
+TRANSFER_ACCOUNT_NUMBER=
+TRANSFER_PROOF_WHATSAPP=
+TRANSFER_PROOF_EMAIL=weartee.ng@gmail.com
+```
+
+Customers place the order first, then see the amount, account details, and
+order-number reference on the confirmation page. In Admin, change the order's
+payment status to **Paid** after verifying the transfer.

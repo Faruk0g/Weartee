@@ -40,4 +40,18 @@ document.addEventListener("DOMContentLoaded", () => {
       el.scrollBy({ left: btn.classList.contains("next") ? step : -step, behavior: "smooth" });
     });
   });
+
+  document.addEventListener("products:updated", () => {
+    const best = [...products]
+      .sort((a, b) => b.rating.count - a.rating.count)
+      .slice(0, 10);
+    const newest = [...products].slice(-10).reverse();
+    document.getElementById("bestCarousel").innerHTML = best
+      .map(productCard)
+      .join("");
+    document.getElementById("newCarousel").innerHTML = newest
+      .map(productCard)
+      .join("");
+    guardImages(document);
+  });
 });

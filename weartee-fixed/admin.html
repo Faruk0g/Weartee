@@ -370,7 +370,7 @@
       }
       .prod-row {
         display: grid;
-        grid-template-columns: 1fr 140px 100px;
+        grid-template-columns: minmax(150px, 1fr) 125px 115px 100px;
         gap: 10px;
         align-items: center;
         padding: 10px;
@@ -382,6 +382,15 @@
         border-radius: 8px;
         padding: 8px;
         width: 100%;
+      }
+      @media (max-width: 700px) {
+        .prod-row {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        }
+        .prod-row > div,
+        .prod-row [data-save] {
+          grid-column: 1 / -1;
+        }
       }
     </style>
   </head>
@@ -419,7 +428,7 @@
       <aside class="side">
         <div class="brand">WEAR<em>TEE</em> Admin</div>
         <button class="nav-btn active" data-view="orders">Orders</button>
-        <button class="nav-btn" data-view="products">Products / prices</button>
+        <button class="nav-btn" data-view="products">Products / stock</button>
         <button class="nav-btn" data-view="detail" id="navDetail" disabled>
           Order detail
         </button>
@@ -491,6 +500,15 @@
                   <select id="detailStatus"></select>
                 </div>
                 <div class="field">
+                  <label for="detailPaymentStatus">Payment status</label>
+                  <select id="detailPaymentStatus">
+                    <option value="Awaiting Transfer">Awaiting Transfer</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Due on Delivery">Due on Delivery</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+                <div class="field">
                   <label for="emailMessage"
                     >Extra note to customer (optional)</label
                   >
@@ -523,7 +541,7 @@
 
         <section id="viewProducts" class="hidden">
           <div class="topbar">
-            <h2>Catalog prices</h2>
+            <h2>Catalog price &amp; stock</h2>
             <button class="btn btn-secondary" id="refreshProducts">
               Refresh
             </button>
@@ -532,6 +550,7 @@
             <div class="toolbar">
               <input id="productSearch" placeholder="Search products..." />
             </div>
+            <p class="muted" style="padding: 0 14px">Set stock left to 0 to show Out of Stock. Leave it blank to keep stock untracked.</p>
             <div class="prod-grid" id="productsGrid"></div>
           </div>
         </section>

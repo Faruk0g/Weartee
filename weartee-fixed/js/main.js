@@ -28,6 +28,7 @@ const Cart = {
             image: product.image,
             price: product.price,
             category: product.category,
+            stock: product.stock,
           }
         : item;
     });
@@ -100,6 +101,19 @@ const Cart = {
     const line = items.find(
       (i) => i.id === id && i.size === size && i.color === color,
     );
+    if (
+      product.stock != null &&
+      (!Number.isInteger(Number(product.stock)) ||
+        product.stock <= 0 ||
+        (line ? line.qty : 0) + qty > product.stock)
+    ) {
+      toast(
+        product.stock <= 0
+          ? `${product.name} is out of stock`
+          : `Only ${product.stock} of ${product.name} are available`,
+      );
+      return false;
+    }
     if (line) {
       line.qty += qty;
       Object.assign(line, Cart.productLine(product, size, color, line.qty));
@@ -107,11 +121,14 @@ const Cart = {
       items.push(Cart.productLine(product, size, color, qty));
     }
     Cart.save(items);
+    return true;
   },
   updateQty(index, qty) {
     const items = Cart.all();
     if (!items[index]) return;
-    items[index].qty = Math.max(1, Math.min(99, qty));
+    const product = products.find((p) => p.id === items[index].id);
+    const max = product?.stock == null ? 99 : Math.max(1, product.stock);
+    items[index].qty = Math.max(1, Math.min(max, qty));
     Cart.save(items);
   },
   remove(index) {
@@ -263,6 +280,14 @@ function categoryLabel(slug) {
 function productCard(product) {
   const badges = [];
   if (product.isNew) badges.push('<span class="badge badge-new">New</span>');
+  if (product.stock != null) {
+    badges.push(
+      product.stock > 0
+        ? `<span class="badge badge-stock">${product.stock} left</span>`
+        : '<span class="badge badge-out-stock">Out of Stock</span>',
+    );
+  }
+  const outOfStock = product.stock != null && product.stock <= 0;
   return `
   <article class="product-card">
     <div class="pc-media">
@@ -277,7 +302,7 @@ function productCard(product) {
       <div class="pc-rating">${starHTML(product.rating)} <span>${product.rating.star} (${product.rating.count})</span></div>
       <div class="pc-foot">
         <span class="pc-price">${formatPrice(product.price)}</span>
-        <button class="pc-add" data-add="${product.id}" aria-label="Add ${product.name} to cart" title="Add to cart">
+        <button class="pc-add" data-add="${product.id}" aria-label="${outOfStock ? `${product.name} is out of stock` : `Add ${product.name} to cart`}" title="${outOfStock ? "Out of stock" : "Add to cart"}" ${outOfStock ? "disabled" : ""}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
         </button>
       </div>
@@ -292,8 +317,25 @@ function quickAdd(id) {
     size: product.sizes[Math.min(1, product.sizes.length - 1)],
     color: product.colors[0],
   };
-  Cart.add(id, defaults.size, defaults.color, 1);
-  toast(`Added to cart — ${product.name}`);
+  if (Cart.add(id, defaults.size, defaults.color, 1)) {
+    toast(`Added to cart — ${product.name}`);
+  }
+}
+
+async function loadCatalogStock() {
+  if (!window.WearteeAPI) return;
+  try {
+    const res = await window.WearteeAPI.api("/api/products");
+    const byId = new Map((res.products || []).map((p) => [p.id, p]));
+    products.forEach((product) => {
+      const saved = byId.get(product.id);
+      if (saved && saved.stock != null) product.stock = saved.stock;
+      else delete product.stock;
+    });
+    document.dispatchEvent(new CustomEvent("products:updated"));
+  } catch (err) {
+    console.warn("Product stock could not be loaded", err);
+  }
 }
 
 function statusBadge(status) {
@@ -516,5 +558,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   guardImages(document);
   if (window.WearteeAPI) {
     await Cart.pullFromServer();
+    await loadCatalogStock();
   }
 });

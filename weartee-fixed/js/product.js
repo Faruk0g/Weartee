@@ -26,6 +26,14 @@ function selectColor(color) {
 
 function addToCart(buyNow) {
   if (!product) return;
+  if (product.stock != null && (product.stock <= 0 || qty > product.stock)) {
+    toast(
+      product.stock <= 0
+        ? `${product.name} is out of stock`
+        : `Only ${product.stock} of ${product.name} are available`,
+    );
+    return;
+  }
   const sizeChips = document.querySelectorAll("#pdSizes .size-chip");
   if (sizeChips.length && !selectedSize) {
     sizeChips.forEach((chip) => chip.classList.add("error"));
@@ -40,8 +48,9 @@ function addToCart(buyNow) {
     window.location.href = "checkout.html?buynow=1";
     return;
   }
-  Cart.add(product.id, selectedSize, selectedColor, qty);
-  toast(`Added to cart — ${product.name}`);
+  if (Cart.add(product.id, selectedSize, selectedColor, qty)) {
+    toast(`Added to cart — ${product.name}`);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -53,6 +62,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.title = `${product.name} — WEARTEE`;
+
+  const updateInventoryDisplay = () => {
+    const stockBadge = document.querySelector(".pd-stock");
+    const outOfStock = product.stock != null && product.stock <= 0;
+    if (stockBadge) {
+      stockBadge.textContent =
+        product.stock == null
+          ? "In Stock"
+          : outOfStock
+            ? "Out of Stock"
+            : `${product.stock} left`;
+      stockBadge.classList.toggle("badge-out-stock", outOfStock);
+    }
+    ["addBtn", "buyBtn"].forEach((id) => {
+      const button = document.getElementById(id);
+      if (button) button.disabled = outOfStock;
+    });
+    const plus = document.getElementById("qtyPlus");
+    if (plus) {
+      plus.disabled =
+        outOfStock || (product.stock != null && qty >= product.stock);
+    }
+    if (product.stock != null && product.stock > 0 && qty > product.stock) {
+      qty = product.stock;
+      updateQtyDisplay();
+    }
+  };
+  document.addEventListener("products:updated", updateInventoryDisplay);
+  updateInventoryDisplay();
 
   const img = document.getElementById("pdImage");
   img.src = product.image;
@@ -94,10 +132,13 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("qtyMinus").addEventListener("click", () => {
     qty = Math.max(1, qty - 1);
     updateQtyDisplay();
+    updateInventoryDisplay();
   });
   document.getElementById("qtyPlus").addEventListener("click", () => {
-    qty = Math.min(99, qty + 1);
+    const max = product.stock == null ? 99 : Math.min(99, product.stock);
+    qty = Math.min(max, qty + 1);
     updateQtyDisplay();
+    updateInventoryDisplay();
   });
 
   document.getElementById("addBtn").addEventListener("click", () => addToCart(false));

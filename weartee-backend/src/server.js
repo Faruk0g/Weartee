@@ -141,10 +141,21 @@ function sanitizeItems(rawItems, products) {
   if (!Array.isArray(rawItems) || !rawItems.length)
     return { error: "Cart is empty" };
   const items = [];
+  const requestedByProduct = new Map();
   for (const line of rawItems) {
     const product = products.find((p) => p.id === line.id);
     if (!product) return { error: `Unknown product: ${line.id}` };
     const qty = Math.max(1, Math.min(99, Number(line.qty) || 1));
+    const requested = (requestedByProduct.get(product.id) || 0) + qty;
+    requestedByProduct.set(product.id, requested);
+    if (product.stock != null && requested > Number(product.stock)) {
+      return {
+        error:
+          Number(product.stock) === 0
+            ? `${product.name} is out of stock`
+            : `Only ${product.stock} of ${product.name} are available`,
+      };
+    }
     const size = product.sizes.includes(line.size)
       ? line.size
       : product.sizes[0];
@@ -178,10 +189,21 @@ async function resolveCartKey(req, url) {
 function normalizeCartItems(rawItems, products) {
   if (!Array.isArray(rawItems)) return { error: "Items must be an array" };
   const items = [];
+  const requestedByProduct = new Map();
   for (const line of rawItems) {
     const product = products.find((p) => p.id === line.id);
     if (!product) continue;
     const qty = Math.max(1, Math.min(99, Number(line.qty) || 1));
+    const requested = (requestedByProduct.get(product.id) || 0) + qty;
+    requestedByProduct.set(product.id, requested);
+    if (product.stock != null && requested > Number(product.stock)) {
+      return {
+        error:
+          Number(product.stock) === 0
+            ? `${product.name} is out of stock`
+            : `Only ${product.stock} of ${product.name} are available`,
+      };
+    }
     const size = product.sizes.includes(line.size)
       ? line.size
       : product.sizes[0];
@@ -192,7 +214,8 @@ function normalizeCartItems(rawItems, products) {
       (i) => i.id === product.id && i.size === size && i.color === color,
     );
     if (existing) {
-      existing.qty = Math.min(99, existing.qty + qty);
+      const nextQty = Math.min(99, existing.qty + qty);
+      existing.qty = nextQty;
     } else {
       items.push({
         id: product.id,
@@ -666,6 +689,19 @@ async function handle(req, res) {
       if (!product) return send(res, 404, { error: "Product not found" });
       if (body.price !== undefined)
         product.price = Math.max(0, Number(body.price) || 0);
+      if (body.stock !== undefined) {
+        if (body.stock === null || body.stock === "") {
+          delete product.stock;
+        } else {
+          const stock = Number(body.stock);
+          if (!Number.isInteger(stock) || stock < 0) {
+            return send(res, 400, {
+              error: "Stock must be a whole number 0 or greater",
+            });
+          }
+          product.stock = stock;
+        }
+      }
       if (body.name !== undefined)
         product.name = String(body.name).trim() || product.name;
       if (body.category !== undefined)

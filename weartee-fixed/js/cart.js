@@ -15,14 +15,28 @@ function renderCart() {
     document.getElementById("checkoutBtn").style.display = "none";
   } else {
     document.getElementById("checkoutBtn").style.display = "";
+    const unavailableItems = items.filter((item) => {
+      const product = products.find((p) => p.id === item.id);
+      return product?.stock != null && (product.stock <= 0 || item.qty > product.stock);
+    });
+    const checkoutButton = document.getElementById("checkoutBtn");
+    checkoutButton.disabled = unavailableItems.length > 0;
+    checkoutButton.title = unavailableItems.length
+      ? "Remove out-of-stock items or lower their quantity to continue"
+      : "";
     list.innerHTML = items
       .map(
-        (item, i) => `
+        (item, i) => {
+          const product = products.find((p) => p.id === item.id);
+          const unavailable =
+            product?.stock != null &&
+            (product.stock <= 0 || item.qty > product.stock);
+          return `
       <div class="cart-item">
         <a class="ci-media" href="product.html?id=${item.id}"><img src="${item.image}" alt="${item.name}" data-guard></a>
         <div class="ci-body">
           <a class="ci-name" href="product.html?id=${item.id}">${item.name}</a>
-          <span class="ci-meta">${item.size ? "Size " + item.size : ""}${item.color && item.color !== "multi" ? " · " + item.color : ""}</span>
+          <span class="ci-meta">${item.size ? "Size " + item.size : ""}${item.color && item.color !== "multi" ? " · " + item.color : ""}${unavailable ? " · Out of stock or quantity unavailable" : ""}</span>
           <span class="ci-price">${formatPrice(item.price)}</span>
           <div class="ci-row">
             <div class="qty-stepper">
@@ -30,7 +44,7 @@ function renderCart() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg>
               </button>
               <span class="qty-num">${item.qty}</span>
-              <button class="qty-btn" data-plus="${i}" aria-label="Increase quantity">
+              <button class="qty-btn" data-plus="${i}" aria-label="Increase quantity" ${product?.stock != null && item.qty >= product.stock ? "disabled" : ""}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
               </button>
             </div>
@@ -44,6 +58,7 @@ function renderCart() {
           <span class="ci-line-total">${formatPrice(item.price * item.qty)}</span>
         </div>
       </div>`
+        }
       )
       .join("");
   }
@@ -97,6 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.addEventListener("cart:changed", renderCart);
+  document.addEventListener("products:updated", renderCart);
 
   const checkoutBtn = document.getElementById("checkoutBtn");
   if (checkoutBtn) {

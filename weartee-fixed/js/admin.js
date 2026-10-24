@@ -157,6 +157,17 @@ function openOrder(id) {
   $("navDetail").disabled = false;
   $("detailTitle").textContent = `Order #${order.id}`;
   $("detailStatus").value = order.status;
+  const paymentStatuses =
+    order.payment === "Bank Transfer"
+      ? ["Awaiting Transfer", "Paid"]
+      : order.payment === "Pay on Delivery"
+        ? ["Due on Delivery", "Paid"]
+        : ["Pending", "Paid"];
+  $("detailPaymentStatus").innerHTML = paymentStatuses
+    .map((status) => `<option value="${status}">${status}</option>`)
+    .join("");
+  $("detailPaymentStatus").value =
+    order.paymentStatus || paymentStatuses[0];
   $("detailShipping").value = order.shippingFee ?? 0;
   $("emailMessage").value = "";
   $("detailCustomer").innerHTML = `
@@ -165,6 +176,7 @@ function openOrder(id) {
     <div style="margin-top:8px;">${order.shipping?.address || ""}, ${order.shipping?.city || ""} — ${order.shipping?.state || ""}</div>
     ${order.shipping?.note ? `<div style="margin-top:8px;"><em>Note: ${order.shipping.note}</em></div>` : ""}
     <div style="margin-top:8px;">Payment: ${order.payment || "—"}</div>
+    <div style="margin-top:8px;">Payment status: ${order.paymentStatus || "Pending"}</div>
   `;
   renderDetailItems();
   renderDetailTotals();
@@ -268,6 +280,7 @@ async function saveStatus(sendEmail) {
   try {
     const body = {
       status: $("detailStatus").value,
+      paymentStatus: $("detailPaymentStatus").value,
       shippingFee: Number($("detailShipping").value || 0),
       items: state.current.items,
       sendEmail: !!sendEmail,
@@ -329,9 +342,10 @@ function renderProducts() {
       <div class="prod-row" data-id="${p.id}">
         <div>
           <div class="item-name">${p.name}</div>
-          <div class="item-meta">${p.category} · ${p.id.slice(0, 8)}…</div>
+          <div class="item-meta">${p.category} · ${p.stock == null ? "Stock untracked" : `${p.stock} left`}</div>
         </div>
-        <input type="number" min="0" step="100" data-price value="${p.price}" />
+        <input type="number" min="0" step="100" data-price value="${p.price}" aria-label="${p.name} price" placeholder="Price" />
+        <input type="number" min="0" step="1" data-stock value="${p.stock ?? ""}" aria-label="${p.name} stock left" placeholder="Stock left" />
         <button class="btn btn-primary" data-save>Save</button>
       </div>`;
     })
@@ -344,18 +358,25 @@ function renderProducts() {
         const row = btn.closest(".prod-row");
         const id = row.dataset.id;
         const price = Number(row.querySelector("[data-price]").value || 0);
+        const stockInput = row.querySelector("[data-stock]").value.trim();
+        const stock = stockInput === "" ? null : Number(stockInput);
+        if (stock !== null && (!Number.isInteger(stock) || stock < 0)) {
+          toast("Stock must be a whole number 0 or greater");
+          return;
+        }
         btn.disabled = true;
         try {
           const res = await adminApi(
             `/api/admin/products/${encodeURIComponent(id)}`,
             {
               method: "PATCH",
-              body: JSON.stringify({ price }),
+              body: JSON.stringify({ price, stock }),
             },
           );
           const idx = state.products.findIndex((p) => p.id === id);
           if (idx >= 0) state.products[idx] = res.product;
-          toast("Price updated");
+          renderProducts();
+          toast("Price and stock updated");
         } catch (err) {
           toast(err.message || "Update failed");
         } finally {
