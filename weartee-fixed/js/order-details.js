@@ -56,8 +56,16 @@ document.addEventListener("DOMContentLoaded", async () => {
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.1V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
         </span>
         <div>
-          <h3>Thank you — your order is confirmed!</h3>
-          <p>We've sent the details to ${order.shipping.email}. You'll get an update as soon as it ships.</p>
+          <h3>${
+            order.payment === "Bank Transfer"
+              ? "Order received — transfer required"
+              : "Thank you — your order is confirmed!"
+          }</h3>
+          <p>${
+            order.payment === "Bank Transfer"
+              ? "Complete the bank transfer using the instructions below. We will verify your payment before processing the order."
+              : "Your order has been received. You'll get an update as soon as it ships."
+          }</p>
         </div>
       </div>`;
   }
@@ -98,6 +106,55 @@ document.addEventListener("DOMContentLoaded", async () => {
     order.payment === "Card"
       ? "Card payment (charged on order)"
       : order.payment;
+  const paymentStatus =
+    order.paymentStatus ||
+    (order.payment === "Bank Transfer"
+      ? "Awaiting Transfer"
+      : order.payment === "Pay on Delivery"
+        ? "Due on Delivery"
+        : "Pending");
+  document.getElementById("odPaymentStatus").textContent =
+    `Payment status: ${paymentStatus}`;
+
+  if (order.payment === "Bank Transfer") {
+    const instructions = document.getElementById("transferInstructions");
+    const unavailable = document.getElementById("transferUnavailable");
+    instructions.hidden = false;
+    document.getElementById("transferAmount").textContent = formatPrice(
+      order.total,
+    );
+    document.getElementById("transferReference").textContent =
+      `Order ${order.id}`;
+    try {
+      const info = await window.WearteeAPI.api("/api/payment-info");
+      const bank = info.bankTransfer || {};
+      const ready = bank.bankName && bank.accountName && bank.accountNumber;
+      unavailable.hidden = !!ready;
+      if (ready) {
+        document.getElementById("transferBank").textContent = bank.bankName;
+        document.getElementById("transferAccountName").textContent =
+          bank.accountName;
+        document.getElementById("transferAccountNumber").textContent =
+          bank.accountNumber;
+      }
+      const proof = document.getElementById("transferProof");
+      if (bank.proofWhatsApp) {
+        let number = bank.proofWhatsApp.replace(/\D/g, "");
+        if (number.startsWith("0")) number = `234${number.slice(1)}`;
+        else if (!number.startsWith("234")) number = `234${number}`;
+        const message = encodeURIComponent(
+          `Transfer proof for order ${order.id}`,
+        );
+        proof.innerHTML = `<a class="btn btn-primary btn-sm" href="https://wa.me/${number}?text=${message}" target="_blank" rel="noopener">Send transfer proof on WhatsApp</a>`;
+      } else if (bank.proofEmail) {
+        const subject = encodeURIComponent(`Transfer proof for order ${order.id}`);
+        proof.innerHTML = `<a href="mailto:${encodeURIComponent(bank.proofEmail)}?subject=${subject}">Email transfer proof</a>`;
+      }
+    } catch (err) {
+      console.warn("Could not load bank transfer details", err);
+      unavailable.hidden = false;
+    }
+  }
 
   const itemCount = order.items.reduce((n, i) => n + i.qty, 0);
   document.getElementById("sumItemsLabel").textContent = `Items (${itemCount})`;
