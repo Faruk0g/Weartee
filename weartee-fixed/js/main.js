@@ -16,7 +16,33 @@ const Store = {
 
 const Cart = {
   all() {
-    return Store.get("wt_cart", []);
+    return Cart.withCatalogPrices(Store.get("wt_cart", []));
+  },
+  withCatalogPrices(items) {
+    return (items || []).map((item) => {
+      const product = products.find((p) => p.id === item.id);
+      return product
+        ? {
+            ...item,
+            name: product.name,
+            image: product.image,
+            price: product.price,
+            category: product.category,
+          }
+        : item;
+    });
+  },
+  productLine(product, size, color, qty) {
+    return {
+      id: product.id,
+      name: product.name,
+      image: product.image,
+      price: product.price,
+      category: product.category,
+      size,
+      color,
+      qty,
+    };
   },
   save(items) {
     Store.set("wt_cart", items);
@@ -44,10 +70,11 @@ const Cart = {
     try {
       const res = await window.WearteeAPI.api("/api/cart");
       if (Array.isArray(res.items)) {
-        Store.set("wt_cart", res.items);
+        const items = Cart.withCatalogPrices(res.items);
+        Store.set("wt_cart", items);
         Cart.refreshBadge();
         document.dispatchEvent(new CustomEvent("cart:changed"));
-        return res.items;
+        return items;
       }
     } catch (err) {
       console.warn("Cart pull failed", err);
@@ -75,17 +102,9 @@ const Cart = {
     );
     if (line) {
       line.qty += qty;
+      Object.assign(line, Cart.productLine(product, size, color, line.qty));
     } else {
-      items.push({
-        id,
-        name: product.name,
-        image: product.image,
-        price: product.price,
-        category: product.category,
-        size,
-        color,
-        qty,
-      });
+      items.push(Cart.productLine(product, size, color, qty));
     }
     Cart.save(items);
   },
