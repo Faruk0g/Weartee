@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.title = `${product.name} — WEARTEE`;
 
   const updateInventoryDisplay = () => {
+    document.getElementById("pdPrice").textContent = formatPrice(product.price);
     const stockBadge = document.querySelector(".pd-stock");
     const outOfStock = product.stock != null && product.stock <= 0;
     if (stockBadge) {
@@ -151,6 +152,20 @@ document.addEventListener("DOMContentLoaded", () => {
     .slice(0, 8);
   const fallback = products.filter((p) => p.id !== product.id).slice(0, 8);
   document.getElementById("relCarousel").innerHTML = (related.length ? related : fallback).map(productCard).join("");
+
+  document.addEventListener("products:updated", () => {
+    const updatedRelated = products
+      .filter((p) => p.category === product.category && p.id !== product.id)
+      .sort((a, b) => b.rating.count - a.rating.count)
+      .slice(0, 8);
+    const updatedFallback = products.filter((p) => p.id !== product.id).slice(0, 8);
+    document.getElementById("relCarousel").innerHTML = (
+      updatedRelated.length ? updatedRelated : updatedFallback
+    )
+      .map(productCard)
+      .join("");
+    guardImages(document);
+  });
 
   document.querySelectorAll("[data-car]").forEach((btn) => {
     btn.addEventListener("click", () => {

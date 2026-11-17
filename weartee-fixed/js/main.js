@@ -322,19 +322,24 @@ function quickAdd(id) {
   }
 }
 
-async function loadCatalogStock() {
+async function loadCatalogFromServer() {
   if (!window.WearteeAPI) return;
   try {
     const res = await window.WearteeAPI.api("/api/products");
     const byId = new Map((res.products || []).map((p) => [p.id, p]));
     products.forEach((product) => {
       const saved = byId.get(product.id);
-      if (saved && saved.stock != null) product.stock = saved.stock;
-      else delete product.stock;
+      if (saved) {
+        if (Number.isFinite(Number(saved.price))) {
+          product.price = Number(saved.price);
+        }
+        if (saved.stock != null) product.stock = Number(saved.stock);
+        else delete product.stock;
+      }
     });
     document.dispatchEvent(new CustomEvent("products:updated"));
   } catch (err) {
-    console.warn("Product stock could not be loaded", err);
+    console.warn("Current product prices and stock could not be loaded", err);
   }
 }
 
@@ -558,6 +563,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   guardImages(document);
   if (window.WearteeAPI) {
     await Cart.pullFromServer();
-    await loadCatalogStock();
+    await loadCatalogFromServer();
   }
 });

@@ -265,6 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (stateEl) {
     stateEl.addEventListener("change", renderSummary);
   }
+  document.addEventListener("products:updated", renderSummary);
 
   goToStep(1);
   renderSummary();
